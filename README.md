@@ -1,4 +1,4 @@
-# elastos-trinity-plugins-wallet
+# elastos-essentials-plugins-wallet
 
 This plugin defines a global `cordova.walletManager` object, which provides an API for wallet library.
 
@@ -11,10 +11,6 @@ function onDeviceReady() {
 }
 ```
 ---
-
-## Installation
-
-    The plugins field of dapp manifest.json adds Wallet values, such as "plugins": ["XXXX", "Wallet", "XXXX"]
 
 ## Supported Platforms
 

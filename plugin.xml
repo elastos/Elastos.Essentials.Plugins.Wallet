@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="elastos-trinity-plugins-wallet" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="elastos-essentials-plugin-wallet" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Wallet</name>
     <js-module name="Wallet" src="www/wallet.js">
         <clobbers target="walletManager" />
@@ -8,11 +8,11 @@
 	<platform name="android">
 		<config-file target="config.xml" parent="/*">
 			<feature name="Wallet">
-				<param name="android-package" value="org.elastos.trinity.plugins.wallet.Wallet" />
+				<param name="android-package" value="org.elastos.essentials.plugins.wallet.Wallet" />
 			</feature>
 		</config-file>
-        <source-file src="src/android/Wallet.java" target-dir="src/org/elastos/trinity/plugins/wallet" />
-        <source-file src="src/android/WalletHttprequest.java" target-dir="src/org/elastos/trinity/plugins/wallet" />
+        <source-file src="src/android/Wallet.java" target-dir="src/org/elastos/essentials/plugins/wallet" />
+        <source-file src="src/android/WalletHttprequest.java" target-dir="src/org/elastos/essentials/plugins/wallet" />
         <framework src="src/android/wallet.gradle" custom="true" type="gradleReference"/>
         <!-- <resource-file src="src/android/libs/org.elastos.spvcore-debug.aar" target="libs/org.elastos.spvcore-debug.aar"/> -->
 	</platform>
@@ -50,5 +50,6 @@
         <source-file src="src/ios/libspvsdk/lib/libsqlite3.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libssl.a" framework="true" />
     </platform>
+    <hook src="hooks/before_plugin_install/build_ts.js" type="before_plugin_install" />
 </plugin>
 

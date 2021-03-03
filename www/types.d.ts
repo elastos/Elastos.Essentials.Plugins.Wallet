@@ -86,6 +86,11 @@ declare module WalletPlugin {
         OFF = 'off',
     }
 
+    const enum MnemonicLanguage {
+        CHINESE = 'chinese',
+        ENGLISH = "english",
+    }
+
     interface WalletManager {
         //MasterWalletManager
 

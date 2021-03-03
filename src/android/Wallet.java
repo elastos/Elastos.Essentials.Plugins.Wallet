@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Elastos Foundation
+ * Copyright (c) 2021 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,13 @@
  * SOFTWARE.
  */
 
-package org.elastos.trinity.plugins.wallet;
+package org.elastos.essentials.plugins.wallet;
+
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 
 import org.elastos.spvcore.EthSidechainSubWallet;
 import org.elastos.spvcore.ISubWalletListener;
@@ -32,13 +38,6 @@ import org.elastos.spvcore.SidechainSubWallet;
 import org.elastos.spvcore.MasterWalletManager;
 import org.elastos.spvcore.SubWalletCallback;
 import org.elastos.spvcore.WalletException;
-import org.elastos.trinity.runtime.PreferenceManager;
-import org.elastos.trinity.runtime.TrinityPlugin;
-
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.PluginResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,7 +61,7 @@ import android.util.Log;
 /**
  * wallet webview jni
  */
-public class Wallet extends TrinityPlugin {
+public class Wallet extends CordovaPlugin {
 
     private static final String TAG = "Wallet";
 
@@ -85,8 +84,8 @@ public class Wallet extends TrinityPlugin {
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
 
-    private static String ethscjsonrpcUrl = "";
-    private static String ethscapimiscUrl = "";
+    private static String ethscjsonrpcUrl = "http://api.elastos.io:20636";
+    private static String ethscapimiscUrl = "http://api.elastos.io:20634";
     private static String ethscGetTokenListUrl = "";
 
     private static String netType = "MainNet";
@@ -158,7 +157,8 @@ public class Wallet extends TrinityPlugin {
         walletRefCount--;
 
         if (mMasterWalletManager != null) {
-            subwalletListenerMap.remove(did + modeId);
+            // User should call removeWalletListener
+            //subwalletListenerMap.remove(did + modeId);
 
             if (walletRefCount == 0) {
                 Log.i(TAG, "onDestroy");
@@ -199,8 +199,8 @@ public class Wallet extends TrinityPlugin {
             return;
         }
 
-        String rootPath = getDataPath() + "spv";
-        // String rootPath = cordova.getActivity().getFilesDir() + "/spv";
+//        String rootPath = getDataPath() + "spv";
+         String rootPath = cordova.getActivity().getFilesDir() + "/spv";
 
         File destDir = new File(rootPath);
         if (!destDir.exists()) {
@@ -211,12 +211,14 @@ public class Wallet extends TrinityPlugin {
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
-        netType = PreferenceManager.getShareInstance().getNetworkType();
-        String config = PreferenceManager.getShareInstance().getNetworkConfig();
+        //TODO add api for netType, rpcurl
+//        netType = PreferenceManager.getShareInstance().getNetworkType();
+//        String config = PreferenceManager.getShareInstance().getNetworkConfig();
+        String config = "";
         mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
         mMasterWalletManager.SetLogLevel("warning");
-        ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
-        ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
+//        ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
+//        ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
         if ("TestNet".equals(netType)) {
             ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
         } else {
@@ -1979,12 +1981,15 @@ public class Wallet extends TrinityPlugin {
     }
 
     public void registerWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        subwalletListenerMap.put(did + modeId, cc);
+        String id = args.getString(0);
+        subwalletListenerMap.put(id, cc);
+        cc.success("");
     }
 
-    public void removeWalletListener(JSONArray args, CallbackContext cc) {
-        subwalletListenerMap.remove(did + modeId);
-        cc.success("remove listener");
+    public void removeWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
+        String id = args.getString(0);
+        subwalletListenerMap.remove(id);
+        cc.success("");
     }
 
     // args[0]: String masterWalletID
@@ -4102,9 +4107,9 @@ public class Wallet extends TrinityPlugin {
 
     private String getSPVSyncStateFolderPath(String masterWalletID) {
         if ("TestNet".equals(netType)) {
-            return getDataPath()+"/spv/data/TestNet/"+masterWalletID;
+            return cordova.getActivity().getFilesDir() + "/spv/data/TestNet/"+masterWalletID;
         } else {
-            return getDataPath()+"/spv/data/"+masterWalletID;
+            return cordova.getActivity().getFilesDir() + "/spv/data/"+masterWalletID;
         }
     }
 

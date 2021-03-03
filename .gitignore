@@ -1,3 +1,4 @@
 www/wallet.js
 src/ios/libspvsdk
 .DS_Store
+package-lock.json
