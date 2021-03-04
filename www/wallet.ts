@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2019 Elastos Foundation
+* Copyright (c) 2021 Elastos Foundation
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     //MasterWalletManager
 
+    init(args, success, error) {
+        exec(success, error, "Wallet", "init", args);
+    };
+
     generateMnemonic(args, success, error) {
         exec(success, error, "Wallet", "generateMnemonic", args);
     };
@@ -93,6 +97,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     setLogLevel(args, success, error) {
         exec(success, error, "Wallet", "setLogLevel", args);
+    };
+
+    setNetwork(args, success, error) {
+        exec(success, error, "Wallet", "setNetwork", args);
     };
 
     //MasterWallet

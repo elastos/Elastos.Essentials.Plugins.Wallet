@@ -84,11 +84,13 @@ public class Wallet extends CordovaPlugin {
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
 
-    private static String ethscjsonrpcUrl = "http://api.elastos.io:20636";
-    private static String ethscapimiscUrl = "http://api.elastos.io:20634";
-    private static String ethscGetTokenListUrl = "";
+    private static String s_ethscjsonrpcUrl = "http://api.elastos.io:20636";
+    private static String s_ethscapimiscUrl = "http://api.elastos.io:20634";
+    private static String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
-    private static String netType = "MainNet";
+    private static String s_netType = "MainNet";
+    private static String s_netConfig = "";
+    private static String s_logLevel = "warning";
 
     private int errCodeParseJsonInAction = 10000;
     private int errCodeInvalidArg = 10001;
@@ -192,41 +194,7 @@ public class Wallet extends CordovaPlugin {
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
-
         walletRefCount++;
-
-        if (mMasterWalletManager != null) {
-            return;
-        }
-
-//        String rootPath = getDataPath() + "spv";
-         String rootPath = cordova.getActivity().getFilesDir() + "/spv";
-
-        File destDir = new File(rootPath);
-        if (!destDir.exists()) {
-            destDir.mkdirs();
-        }
-        String dataPath = rootPath + "/data";
-        destDir = new File(dataPath);
-        if (!destDir.exists()) {
-            destDir.mkdirs();
-        }
-        //TODO add api for netType, rpcurl
-//        netType = PreferenceManager.getShareInstance().getNetworkType();
-//        String config = PreferenceManager.getShareInstance().getNetworkConfig();
-        String config = "";
-        mMasterWalletManager = new MasterWalletManager(rootPath, netType, config, dataPath);
-        mMasterWalletManager.SetLogLevel("warning");
-//        ethscjsonrpcUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.rpcapi", "");
-//        ethscapimiscUrl = PreferenceManager.getShareInstance().getStringValue("sidechain.eth.apimisc", "");
-        if ("TestNet".equals(netType)) {
-            ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
-        } else {
-            ethscGetTokenListUrl = "https://eth.elastos.io";
-        }
-        addWalletListener();
-
-        walletSemaphore = new Semaphore(1);
     }
 
     private void addWalletListener() {
@@ -250,7 +218,7 @@ public class Wallet extends CordovaPlugin {
             return;
         }
         Log.d(TAG, "addSubWalletListener:" + masterWalletID + " " + chainID);
-        subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, ethscjsonrpcUrl, ethscapimiscUrl, new ISubWalletListener() {
+        subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, s_ethscjsonrpcUrl, s_ethscapimiscUrl, new ISubWalletListener() {
             @Override
             public void sendResultSuccess(JSONObject jsonObject) {
                 Log.d(TAG, jsonObject.toString());
@@ -346,13 +314,6 @@ public class Wallet extends CordovaPlugin {
             cc.error(m);
         }
     }
-    //
-    // private void successProcess(CallbackContext cc, Object msg) throws
-    // JSONException {
-    // Log.i(TAG, "result => " + msg);
-    // //Log.i(TAG, "action success");
-    // cc.success(msg);
-    // }
 
     private MasterWallet getIMasterWallet(String masterWalletID) {
         if (mMasterWalletManager == null) {
@@ -390,20 +351,18 @@ public class Wallet extends CordovaPlugin {
                 return false;
             }
             switch (action) {
-                // case "coolMethod":
-                //     String message = args.getString(0);
-                //     this.coolMethod(message, cc);
-                //     break;
-                // case "print":
-                //     this.print(args.getString(0), cc);
-                //     break;
-
                 // Master wallet manager
+                case "init":
+                    this.init(args, cc);
+                    break;
                 case "getVersion":
                     this.getVersion(args, cc);
                     break;
                 case "setLogLevel":
                     this.setLogLevel(args, cc);
+                    break;
+                case "setNetwork":
+                    this.setNetwork(args, cc);
                     break;
                 case "generateMnemonic":
                     this.generateMnemonic(args, cc);
@@ -754,10 +713,40 @@ public class Wallet extends CordovaPlugin {
         return true;
     }
 
+    public void init(JSONArray args, CallbackContext cc) throws JSONException {
+        if (mMasterWalletManager != null) {
+            cc.success("");
+            return;
+        }
+
+        String rootPath = cordova.getActivity().getFilesDir() + "/spv";
+
+        File destDir = new File(rootPath);
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+        String dataPath = rootPath + "/data";
+        destDir = new File(dataPath);
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+
+        try {
+            mMasterWalletManager = new MasterWalletManager(rootPath, s_netType, s_netConfig, dataPath);
+            mMasterWalletManager.SetLogLevel(s_logLevel);
+            addWalletListener();
+
+            walletSemaphore = new Semaphore(1);
+            cc.success("");
+        } catch (WalletException e) {
+            mMasterWalletManager = null;
+            exceptionProcess(e, cc, "init MasterWalletManager error");
+        }
+    }
+
     // args[0]: String language
     public void generateMnemonic(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String language = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -785,7 +774,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: boolean singleAddress
     public void createMasterWallet(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String mnemonic = args.getString(idx++);
         String phrasePassword = args.getString(idx++);
@@ -845,7 +833,6 @@ public class Wallet extends CordovaPlugin {
 
     public void createMultiSignMasterWalletWithPrivKey(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String privKey = args.getString(idx++);
         String payPassword = args.getString(idx++);
@@ -883,7 +870,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: int requiredSignCount
     public void createMultiSignMasterWalletWithMnemonic(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String mnemonic = args.getString(idx++);
         String phrasePassword = args.getString(idx++);
@@ -921,7 +907,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: String payPassword
     public void importWalletWithKeystore(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String keystoreContent = args.getString(idx++);
         String backupPassword = args.getString(idx++);
@@ -954,7 +939,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: boolean singleAddress
     public void importWalletWithMnemonic(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String mnemonic = args.getString(idx++);
         String phrasePassword = args.getString(idx++);
@@ -983,7 +967,6 @@ public class Wallet extends CordovaPlugin {
 
     public void getAllMasterWallets(JSONArray args, CallbackContext cc) throws JSONException {
         try {
-
             ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
             JSONArray masterWalletListJson = new JSONArray();
 
@@ -999,7 +982,6 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     public void getMasterWallet(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -1068,29 +1050,55 @@ public class Wallet extends CordovaPlugin {
         cc.success(version);
     }
 
+    // args[0]: String log level
     public void setLogLevel(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String loglevel = args.getString(idx++);
-
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
             return;
         }
 
-        if (mMasterWalletManager == null) {
-            errorProcess(cc, errCodeInvalidMasterWalletManager, "Master wallet manager has not initialize");
+        s_logLevel = loglevel;
+        if (mMasterWalletManager != null) {
+            mMasterWalletManager.SetLogLevel(loglevel);
+        }
+
+        cc.success("SetLogLevel OK");
+    }
+
+    // args[0]: String network type
+    // args[1]: String network config, only for private network.
+    // args[2]: String json rpc Url
+    // args[3]: String api misc Url
+    public void setNetwork(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String networkType = args.getString(idx++);
+        String networkConfig = args.getString(idx++);
+        String jsonrpcUrl = args.getString(idx++);
+        String apimiscUrl = args.getString(idx++);
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
             return;
         }
 
-        mMasterWalletManager.SetLogLevel(loglevel);
-        cc.success("SetLogLevel OK");
+        s_netType = networkType;
+        s_netConfig = networkConfig;
+        s_ethscjsonrpcUrl = jsonrpcUrl;
+        s_ethscapimiscUrl = apimiscUrl;
+        // TODO user set the s_ethscGetTokenListUrl?
+        if ("TestNet".equals(s_netType)) {
+            s_ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
+        } else {
+            s_ethscGetTokenListUrl = "https://eth.elastos.io";
+        }
+
+        cc.success("");
     }
 
     // args[0]: String masterWalletID
     public void getMasterWalletBasicInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -1114,7 +1122,6 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     public void getAllSubWallets(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -1147,7 +1154,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: long feePerKb
     public void createSubWallet(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1183,7 +1189,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String payPassword
     public void exportWalletWithKeystore(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String backupPassword = args.getString(idx++);
         String payPassword = args.getString(idx++);
@@ -1212,7 +1217,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String payPassword
     public void exportWalletWithMnemonic(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String backupPassword = args.getString(idx++);
 
@@ -1241,7 +1245,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String payPassword
     public void verifyPassPhrase(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String passPhrase = args.getString(idx++);
         String payPassword = args.getString(idx++);
@@ -1269,7 +1272,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String payPassword
     public void verifyPayPassword(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String payPassword = args.getString(idx++);
 
@@ -1296,7 +1298,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void destroySubWallet(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1330,7 +1331,6 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     public void getPubKeyInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -1356,7 +1356,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String address
     public void isAddressValid(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String addr = args.getString(idx++);
 
@@ -1387,7 +1386,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String address
     public void isSubWalletAddressValid(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String address = args.getString(idx++);
@@ -1417,7 +1415,6 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     public void getSupportedChains(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -1449,7 +1446,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String newPassword
     public void changePassword(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String oldPassword = args.getString(idx++);
         String newPassword = args.getString(idx++);
@@ -1479,7 +1475,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: String newPassword
     public void resetPassword(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String mnemonic = args.getString(idx++);
         String passphrase = args.getString(idx++);
@@ -1508,7 +1503,6 @@ public class Wallet extends CordovaPlugin {
 
     public void syncStart(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1534,7 +1528,6 @@ public class Wallet extends CordovaPlugin {
 
     public void syncStop(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1560,7 +1553,6 @@ public class Wallet extends CordovaPlugin {
 
     public void reSync(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1586,7 +1578,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void getBalanceInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1611,7 +1602,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void getBalance(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1638,7 +1628,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void createAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -1669,7 +1658,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: bool internal
     public void getAllAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         int start = args.getInt(idx++);
@@ -1700,7 +1688,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: int count
     public void getAllPublicKeys(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         int start = args.getInt(idx++);
@@ -1729,7 +1716,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String address
     public void getBalanceWithAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String address = args.getString(idx++);
@@ -1763,7 +1749,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: String memo
     public void createTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -1799,7 +1784,6 @@ public class Wallet extends CordovaPlugin {
     // return: String all utxo in json format
     public void getAllUTXOs(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         int start = args.getInt(idx++);
@@ -1831,7 +1815,6 @@ public class Wallet extends CordovaPlugin {
     // return: String txJson
     public void createConsolidateTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String memo = args.getString(idx++);
@@ -1862,7 +1845,6 @@ public class Wallet extends CordovaPlugin {
     // return: String txJson
     public void signTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String rawTransaction = args.getString(idx++);
@@ -1892,7 +1874,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String txJson
     public void getTransactionSignedInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String rawTxJson = args.getString(idx++);
@@ -1922,7 +1903,6 @@ public class Wallet extends CordovaPlugin {
     // return: String resultJson
     public void publishTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String rawTxJson = args.getString(idx++);
@@ -1954,7 +1934,6 @@ public class Wallet extends CordovaPlugin {
     // return: String txJson
     public void getAllTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         int start = args.getInt(idx++);
@@ -1981,13 +1960,27 @@ public class Wallet extends CordovaPlugin {
     }
 
     public void registerWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        String id = args.getString(0);
+        int idx = 0;
+        String id = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
         subwalletListenerMap.put(id, cc);
         cc.success("");
     }
 
     public void removeWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        String id = args.getString(0);
+        int idx = 0;
+        String id = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
         subwalletListenerMap.remove(id);
         cc.success("");
     }
@@ -1996,7 +1989,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void getLastBlockInfo(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -2024,7 +2016,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: String payloadJson
     public void createIdTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String payloadJson = args.getString(idx++);
@@ -2068,7 +2059,6 @@ public class Wallet extends CordovaPlugin {
 
     public void getAllDID(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
@@ -2094,7 +2084,6 @@ public class Wallet extends CordovaPlugin {
 
     public void getAllCID(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
@@ -2120,7 +2109,6 @@ public class Wallet extends CordovaPlugin {
 
     public void didSign(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String did = args.getString(idx++);
         String message = args.getString(idx++);
@@ -2146,7 +2134,6 @@ public class Wallet extends CordovaPlugin {
 
     public void didSignDigest(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String did = args.getString(idx++);
         String digest = args.getString(idx++);
@@ -2172,7 +2159,6 @@ public class Wallet extends CordovaPlugin {
 
     public void verifySignature(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String publicKey = args.getString(idx++);
         String message = args.getString(idx++);
@@ -2198,7 +2184,6 @@ public class Wallet extends CordovaPlugin {
 
     public void getPublicKeyDID(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String pubkey = args.getString(idx++);
 
@@ -2222,7 +2207,6 @@ public class Wallet extends CordovaPlugin {
 
     public void getPublicKeyCID(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String pubkey = args.getString(idx++);
 
@@ -2259,7 +2243,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: int amountUnit
     public void createTransfer(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
@@ -2292,7 +2275,6 @@ public class Wallet extends CordovaPlugin {
     // args[7]: String data
     public void createTransferGeneric(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
@@ -2323,7 +2305,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String tx: json object, must have ID
     public void deleteTransfer(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String tx = args.getString(idx++);
 
@@ -2352,7 +2333,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: String tokenSymbol
     public void getTokenTransactions(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
@@ -2387,7 +2367,6 @@ public class Wallet extends CordovaPlugin {
     // args[6]: String memo
     public void createDepositTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -2434,7 +2413,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: String memo
     public void createVoteProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -2480,7 +2458,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: String invalidCandidates
     public void createVoteCRTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -2711,7 +2688,6 @@ public class Wallet extends CordovaPlugin {
     // args[8]: String payPasswd
     public void generateProducerPayload(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String publicKey = args.getString(idx++);
@@ -2755,7 +2731,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: String payPasswd
     public void generateCancelProducerPayload(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String publicKey = args.getString(idx++);
@@ -2795,7 +2770,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: String memo
     public void createRegisterProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -2837,7 +2811,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: String memo
     public void createUpdateProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -2877,7 +2850,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: String memo
     public void createCancelProducerTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -2916,7 +2888,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: String memo
     public void createRetrieveDepositTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String amount = args.getString(idx++);
@@ -2952,7 +2923,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void getOwnerPublicKey(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -3026,7 +2996,6 @@ public class Wallet extends CordovaPlugin {
     // args[6]: long location
     public void generateCRInfoPayload(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String crPublicKey = args.getString(idx++);
@@ -3066,7 +3035,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String CID
     public void generateUnregisterCRPayload(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String did = args.getString(idx++);
@@ -3105,7 +3073,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: String memo
     public void createRegisterCRTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -3147,7 +3114,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: String memo
     public void createUpdateCRTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -3187,7 +3153,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: String memo
     public void createUnregisterCRTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -3227,7 +3192,6 @@ public class Wallet extends CordovaPlugin {
     // args[4]: String memo
     public void createRetrieveCRDepositTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String crPublicKey = args.getString(idx++);
@@ -3299,7 +3263,6 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String payload
     public void CRCouncilMemberClaimNodeDigest(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String payload = args.getString(idx++);
@@ -3336,7 +3299,6 @@ public class Wallet extends CordovaPlugin {
     // args[3]: String memo
     public void createCRCouncilMemberClaimNodeTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String payload = args.getString(idx++);
@@ -3819,7 +3781,6 @@ public class Wallet extends CordovaPlugin {
     // args[5]: String memo
     public void createWithdrawTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String fromAddress = args.getString(idx++);
@@ -3858,7 +3819,6 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     public void getGenesisAddress(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
-
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
 
@@ -3895,7 +3855,7 @@ public class Wallet extends CordovaPlugin {
 
         new Thread(() -> {
             try {
-                WalletHttprequest walletHttp = new WalletHttprequest(ethscGetTokenListUrl);
+                WalletHttprequest walletHttp = new WalletHttprequest(s_ethscGetTokenListUrl);
                 String result = walletHttp.getTokenListByAddress(address);
                 JSONObject resultObj = new JSONObject(result);
                 JSONArray tokenList = resultObj.getJSONArray("result");
@@ -4106,7 +4066,7 @@ public class Wallet extends CordovaPlugin {
     }
 
     private String getSPVSyncStateFolderPath(String masterWalletID) {
-        if ("TestNet".equals(netType)) {
+        if ("TestNet".equals(s_netType)) {
             return cordova.getActivity().getFilesDir() + "/spv/data/TestNet/"+masterWalletID;
         } else {
             return cordova.getActivity().getFilesDir() + "/spv/data/"+masterWalletID;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Elastos Foundation
+ * Copyright (c) 2021 Elastos Foundation
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,15 +91,27 @@ declare module WalletPlugin {
         ENGLISH = "english",
     }
 
+    const enum NetworkType {
+        MAINNET = "MainNet",
+        TESTNET = 'TestNet',
+        REGNET = 'RegTest',
+        PRIVATENET = 'PrvNet',
+    }
+
     interface WalletManager {
         //MasterWalletManager
 
         /**
-          * Generate a mnemonic by random entropy. We support English, Chinese, French, Italian, Japanese, and
-          *     Spanish 6 types of mnemonic currently.
-          * @param language specify mnemonic language.
-          * @return a random mnemonic.
-          */
+         * Initialize the MasterWalletManager.
+         */
+        init(args, success, error);
+
+        /**
+         * Generate a mnemonic by random entropy. We support English, Chinese, French, Italian, Japanese, and
+         *     Spanish 6 types of mnemonic currently.
+         * @param language specify mnemonic language.
+         * @return a random mnemonic.
+         */
         generateMnemonic(args, success, error);
 
         /**
@@ -114,29 +126,29 @@ declare module WalletPlugin {
         createMasterWallet(args, success, error);
 
         /**
-          * Create a multi-sign master wallet by related co-signers, or return existing master wallet if current master wallet manager has the master wallet id. Note this creating method generate an readonly multi-sign account which can not append sign into a transaction.
-          * @param masterWalletID is the unique identification of a master wallet object.
-          * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
-          * @param m specify minimum count of signature to accomplish related transaction.
-          * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
-          * @param compatible if true, will compatible with web multi-sign wallet.
-          * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
-          * @return If success will return a pointer of master wallet interface.
-          */
+         * Create a multi-sign master wallet by related co-signers, or return existing master wallet if current master wallet manager has the master wallet id. Note this creating method generate an readonly multi-sign account which can not append sign into a transaction.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
+         * @param m specify minimum count of signature to accomplish related transaction.
+         * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
+         * @param compatible if true, will compatible with web multi-sign wallet.
+         * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
+         * @return If success will return a pointer of master wallet interface.
+         */
         createMultiSignMasterWallet(args, success, error);
 
         /**
-          * Create a multi-sign master wallet by private key and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
-          * @param masterWalletID is the unique identification of a master wallet object.
-          * @param xprv root extend private key of wallet.
-          * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-          * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
-          * @param m specify minimum count of signature to accomplish related transaction.
-          * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
-          * @param compatible if true, will compatible with web multi-sign wallet.
-          * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
-          * @return If success will return a pointer of master wallet interface.
-          */
+         * Create a multi-sign master wallet by private key and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param xprv root extend private key of wallet.
+         * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+         * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
+         * @param m specify minimum count of signature to accomplish related transaction.
+         * @param singleAddress if true, the created wallet will only contain one address, otherwise wallet will manager a chain of addresses.
+         * @param compatible if true, will compatible with web multi-sign wallet.
+         * @param timestamp the value of time in seconds since 1970-01-01 00:00:00. It means the time when the wallet contains the first transaction.
+         * @return If success will return a pointer of master wallet interface.
+         */
         createMultiSignMasterWalletWithPrivKey(args, success, error);
 
         /**
@@ -199,6 +211,16 @@ declare module WalletPlugin {
          *  @param level can be value of: "trace", "debug", "info", "warning", "error", "critical", "off"
          */
         setLogLevel(args, success, error);
+
+        /**
+         * Set network type, config and rpc url.
+         * You should call this api before initMasterWalletManager.
+         *  @param type can be value of: "MainNet", "TestNet", "RegTest", "PrvNet"
+         *  @param config The config of the private network, set """ for other network".
+         *  @param jsonrpcUrl The url of json rpc.
+         *  @param apimiscUrl The url of api misc.
+         */
+        setNetwork(args, success, error);
 
         //MasterWallet
 
@@ -476,11 +498,13 @@ declare module WalletPlugin {
 
         /**
          * Add a sub wallet callback object listened to current sub wallet.
+         * @param name The name of the listener.
          */
         registerWalletListener(args, success, error);
 
         /**
          * Remove a sub wallet callback object listened to current sub wallet.
+         *  @param name The name of the listener.
          */
         removeWalletListener(args, success, error);
 
