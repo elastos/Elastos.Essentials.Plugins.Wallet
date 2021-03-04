@@ -65,7 +65,7 @@ public class Wallet extends CordovaPlugin {
 
     private static final String TAG = "Wallet";
 
-    private static HashMap<String, CallbackContext> subwalletListenerMap = new HashMap<>();
+    private static HashMap<Integer, CallbackContext> subwalletListenerMap = new HashMap<>();
     private HashMap<String, InputStream> backupFileReaderMap = new HashMap<>();
     private HashMap<String, Integer> backupFileReaderOffsetsMap = new HashMap<>(); // Current read offset byte position for each active reader
     private HashMap<String, OutputStream> backupFileWriterMap = new HashMap<>();
@@ -159,8 +159,8 @@ public class Wallet extends CordovaPlugin {
         walletRefCount--;
 
         if (mMasterWalletManager != null) {
-            // User should call removeWalletListener
-            //subwalletListenerMap.remove(did + modeId);
+            int cordovaHashCode = this.cordova.hashCode();
+            subwalletListenerMap.remove(cordovaHashCode);
 
             if (walletRefCount == 0) {
                 Log.i(TAG, "onDestroy");
@@ -1959,29 +1959,15 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
-    public void registerWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String id = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        subwalletListenerMap.put(id, cc);
+    public void registerWalletListener(JSONArray args, CallbackContext cc) {
+        int cordovaHashCode = this.cordova.hashCode();
+        subwalletListenerMap.put(cordovaHashCode, cc);
         cc.success("");
     }
 
-    public void removeWalletListener(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String id = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        subwalletListenerMap.remove(id);
+    public void removeWalletListener(JSONArray args, CallbackContext cc) {
+        int cordovaHashCode = this.cordova.hashCode();
+        subwalletListenerMap.remove(cordovaHashCode);
         cc.success("");
     }
 

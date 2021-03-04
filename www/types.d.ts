@@ -498,13 +498,11 @@ declare module WalletPlugin {
 
         /**
          * Add a sub wallet callback object listened to current sub wallet.
-         * @param name The name of the listener.
          */
         registerWalletListener(args, success, error);
 
         /**
          * Remove a sub wallet callback object listened to current sub wallet.
-         *  @param name The name of the listener.
          */
         removeWalletListener(args, success, error);
 
