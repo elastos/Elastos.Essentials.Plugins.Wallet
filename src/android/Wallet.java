@@ -1962,13 +1962,13 @@ public class Wallet extends CordovaPlugin {
     public void registerWalletListener(JSONArray args, CallbackContext cc) {
         int cordovaHashCode = this.cordova.hashCode();
         subwalletListenerMap.put(cordovaHashCode, cc);
-        cc.success("");
+        // Listener, can't call cc.success
     }
 
     public void removeWalletListener(JSONArray args, CallbackContext cc) {
         int cordovaHashCode = this.cordova.hashCode();
         subwalletListenerMap.remove(cordovaHashCode);
-        cc.success("");
+        // Listener, can't call cc.success
     }
 
     // args[0]: String masterWalletID
