@@ -719,14 +719,20 @@ public class Wallet extends CordovaPlugin {
             return;
         }
 
-        String rootPath = cordova.getActivity().getFilesDir() + "/spv";
-
-        File destDir = new File(rootPath);
-        if (!destDir.exists()) {
-            destDir.mkdirs();
+        int idx = 0;
+        String did = args.getString(idx++);
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
         }
+
+        if ((did == null) || did.isEmpty()) {
+            errorProcess(cc, errCodeInvalidDID, "Invalid did");
+        }
+
+        String rootPath = cordova.getActivity().getFilesDir() + "/" + did + "/spv";
         String dataPath = rootPath + "/data";
-        destDir = new File(dataPath);
+        File destDir = new File(dataPath);
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
