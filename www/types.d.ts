@@ -107,6 +107,11 @@ declare module WalletPlugin {
         init(args, success, error);
 
         /**
+         * Destroy the MasterWalletManager.
+         */
+        destroy(args, success, error);
+
+        /**
          * Generate a mnemonic by random entropy. We support English, Chinese, French, Italian, Japanese, and
          *     Spanish 6 types of mnemonic currently.
          * @param language specify mnemonic language.

@@ -88,6 +88,8 @@ public class Wallet extends CordovaPlugin {
     private static String s_ethscapimiscUrl = "http://api.elastos.io:20634";
     private static String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
+    private static String s_did = "";
+    private static String s_dataRootPath = "";
     private static String s_netType = "MainNet";
     private static String s_netConfig = "";
     private static String s_logLevel = "warning";
@@ -156,6 +158,7 @@ public class Wallet extends CordovaPlugin {
      */
     @Override
     public void onDestroy() {
+        Log.i(TAG, "onDestroy");
         walletRefCount--;
 
         if (mMasterWalletManager != null) {
@@ -163,28 +166,7 @@ public class Wallet extends CordovaPlugin {
             subwalletListenerMap.remove(cordovaHashCode);
 
             if (walletRefCount == 0) {
-                Log.i(TAG, "onDestroy");
-
-                try {
-                    walletSemaphore.acquire();
-
-                    ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-                    for (int i = 0; i < masterWalletList.size(); i++) {
-                        MasterWallet masterWallet = masterWalletList.get(i);
-                        ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-                        for (int j = 0; j < subWallets.size(); ++j) {
-                            subWallets.get(j).SyncStop();
-                            subWallets.get(j).RemoveCallback();
-                        }
-                    }
-                    mMasterWalletManager.Dispose();
-                    mMasterWalletManager = null;
-                    Log.i(TAG, "onDestroy end");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                walletSemaphore.release();
+                destroyMasterWalletManager();
             }
         }
 
@@ -195,6 +177,33 @@ public class Wallet extends CordovaPlugin {
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         super.initialize(cordova, webView);
         walletRefCount++;
+    }
+
+    private void destroyMasterWalletManager() {
+        if (mMasterWalletManager != null) {
+            subwalletListenerMap.clear();
+
+            try {
+                walletSemaphore.acquire();
+
+                ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+                for (int i = 0; i < masterWalletList.size(); i++) {
+                    MasterWallet masterWallet = masterWalletList.get(i);
+                    ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
+                    for (int j = 0; j < subWallets.size(); ++j) {
+                        subWallets.get(j).SyncStop();
+                        subWallets.get(j).RemoveCallback();
+                    }
+                }
+                mMasterWalletManager.Dispose();
+                mMasterWalletManager = null;
+                Log.i(TAG, "destroyMasterWalletManager finished");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            walletSemaphore.release();
+        }
     }
 
     private void addWalletListener() {
@@ -354,6 +363,9 @@ public class Wallet extends CordovaPlugin {
                 // Master wallet manager
                 case "init":
                     this.init(args, cc);
+                    break;
+                case "destroy":
+                    this.destroy(args, cc);
                     break;
                 case "getVersion":
                     this.getVersion(args, cc);
@@ -720,25 +732,25 @@ public class Wallet extends CordovaPlugin {
         }
 
         int idx = 0;
-        String did = args.getString(idx++);
+        s_did = args.getString(idx++);
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
             return;
         }
 
-        if ((did == null) || did.isEmpty()) {
+        if ((s_did == null) || s_did.isEmpty()) {
             errorProcess(cc, errCodeInvalidDID, "Invalid did");
         }
 
-        String rootPath = cordova.getActivity().getFilesDir() + "/" + did + "/spv";
-        String dataPath = rootPath + "/data";
-        File destDir = new File(dataPath);
+        String rootPath = cordova.getActivity().getFilesDir() + "/" + s_did + "/spv";
+        s_dataRootPath = rootPath + "/data/";
+        File destDir = new File(s_dataRootPath);
         if (!destDir.exists()) {
             destDir.mkdirs();
         }
 
         try {
-            mMasterWalletManager = new MasterWalletManager(rootPath, s_netType, s_netConfig, dataPath);
+            mMasterWalletManager = new MasterWalletManager(rootPath, s_netType, s_netConfig, s_dataRootPath);
             mMasterWalletManager.SetLogLevel(s_logLevel);
             addWalletListener();
 
@@ -748,6 +760,15 @@ public class Wallet extends CordovaPlugin {
             mMasterWalletManager = null;
             exceptionProcess(e, cc, "init MasterWalletManager error");
         }
+    }
+
+    public void destroy(JSONArray args, CallbackContext cc) throws JSONException {
+        try {
+          destroyMasterWalletManager();
+          cc.success("");
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, "destroy MasterWalletManager error");
+      }
     }
 
     // args[0]: String language
@@ -4059,9 +4080,9 @@ public class Wallet extends CordovaPlugin {
 
     private String getSPVSyncStateFolderPath(String masterWalletID) {
         if ("TestNet".equals(s_netType)) {
-            return cordova.getActivity().getFilesDir() + "/spv/data/TestNet/"+masterWalletID;
+            return s_dataRootPath + "TestNet/"+masterWalletID;
         } else {
-            return cordova.getActivity().getFilesDir() + "/spv/data/"+masterWalletID;
+            return s_dataRootPath + masterWalletID;
         }
     }
 

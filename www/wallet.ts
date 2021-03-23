@@ -55,6 +55,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "init", args);
     };
 
+    destroy(args, success, error) {
+       exec(success, error, "Wallet", "destroy", args);
+    };
+
     generateMnemonic(args, success, error) {
         exec(success, error, "Wallet", "generateMnemonic", args);
     };
