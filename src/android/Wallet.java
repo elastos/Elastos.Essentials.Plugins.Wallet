@@ -2027,17 +2027,15 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[3]: String payloadJson
+    // args[4]: String memo
+    // args[5]: String fee  [option]
     public void createIdTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String payloadJson = args.getString(idx++);
         String memo = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
+        String fee = args.isNull(idx) ? "10000" : args.getString(idx);
 
         try {
             SubWallet subWallet = getSubWallet(masterWalletID, chainID);
@@ -2054,7 +2052,7 @@ public class Wallet extends CordovaPlugin {
 
             IDChainSubWallet idchainSubWallet = (IDChainSubWallet) subWallet;
 
-            cc.success(idchainSubWallet.CreateIDTransaction(payloadJson, memo));
+            cc.success(idchainSubWallet.CreateIDTransaction(payloadJson, memo, fee));
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create ID transaction");
         }
