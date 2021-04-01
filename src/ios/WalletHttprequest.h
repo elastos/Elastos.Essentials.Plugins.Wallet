@@ -25,7 +25,6 @@
 #include "json.hpp"
 #import <string.h>
 #import <map>
-#import "TrinityPlugin.h"
 
 typedef std::string String;
 typedef nlohmann::json Json;

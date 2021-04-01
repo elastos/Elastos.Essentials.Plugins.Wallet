@@ -23,7 +23,7 @@
 #import "Wallet.h"
 #import "WalletHttprequest.h"
 #import <Cordova/CDVCommandDelegate.h>
-#import "WrapSwift.h"
+// #import "WrapSwift.h"
 
 #pragma mark - ElISubWalletCallback C++
 
@@ -508,13 +508,6 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     // 添加检测app进入后台的观察者
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationEnterBackground) name: UIApplicationDidEnterBackgroundNotification object:nil];
 
-    //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(ApplicationWillTerminateNotification) name: UIApplicationWillTerminateNotification object:nil];
-
-
-    //    ISubWalletVector = new  ISubWalletVector();
-    //    ISubWalletArray = [[NSMutableArray alloc] init];
-    //    ISubWalletCallBackArray = [[NSMutableArray alloc] init];
-    //
     TAG = @"Wallet";
 
     walletRefCount++;
@@ -541,48 +534,6 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
 
     errCodeWalletException            = 20000;
 
-    if (nil != mMasterWalletManager) {
-        return;
-    }
-
-    // NSString* rootPath = [NSHomeDirectory() stringByAppendingString:@"/Documents/spv"];
-    NSString* rootPath = [[self getDataPath] stringByAppendingString:@"spv"];
-    NSFileManager *fm = [NSFileManager defaultManager];
-    if (![fm fileExistsAtPath:rootPath]) {
-        [fm createDirectoryAtPath:rootPath withIntermediateDirectories:true attributes:NULL error:NULL];
-    }
-
-    NSString* dataPath = [rootPath stringByAppendingString:@"/data"];
-    if (![fm fileExistsAtPath:dataPath]) {
-        [fm createDirectoryAtPath:dataPath withIntermediateDirectories:true attributes:NULL error:NULL];
-    }
-    netType = [WrapSwift getNetworkType];
-    NSString* config = [WrapSwift getNetworkConfig];
-
-    mEthscjsonrpcUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.rpcapi" :@""]];
-    mEthscapimiscUrl = [self cstringWithString:[WrapSwift getPreferenceStringValue:@"sidechain.eth.apimisc" :@""]];
-    if ([netType isEqual: @"TestNet"]) {
-        mEthscGetTokenListUrl = "https://eth-testnet.elastos.io";
-    } else {
-        mEthscGetTokenListUrl = "https://eth.elastos.io";
-    }
-
-    try {
-        NSLog(@"WALLETTEST new MasterWalletManager rootPath: %@,  dataPath:%@", rootPath, dataPath);
-        mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [netType UTF8String],
-                [config UTF8String], [dataPath UTF8String]);
-       mMasterWalletManager->SetLogLevel("warning");
-    } catch (const std:: exception & e ) {
-        NSString *errString=[self stringWithCString:e.what()];
-        NSLog(@"new MasterWalletManager error: %@", errString);
-    }
-
-    currentDid = [self did];
-
-    [self addWalletListener];
-
-    walletSemaphore = dispatch_semaphore_create(1);
-
     [super pluginInitialize];
 }
 
@@ -592,75 +543,56 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     walletRefCount--;
 
     if (mMasterWalletManager != nil) {
-        NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
-        [subwalletListenerMDict removeObjectForKey:key];
+        // NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
+        // [subwalletListenerMDict removeObjectForKey:key];
 
         if (0 == walletRefCount) {
-            try {
-                dispatch_semaphore_wait(walletSemaphore, DISPATCH_TIME_FOREVER);
-
-                IMasterWalletVector masterWallets = mMasterWalletManager->GetAllMasterWallets();
-
-                for (int i = 0; i < masterWallets.size(); i++) {
-                    IMasterWallet *masterWallet = masterWallets[i];
-                    String masterWalletID = masterWallet->GetID();
-
-                    ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
-                    for (int j = 0; j < subWallets.size(); j++) {
-                        String chainID = subWallets[j]->GetChainID();
-                        ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
-                        if (subWallet != nil) {
-                            try {
-                                subWallet->SyncStop();
-                                subWallet->RemoveCallback();
-                            } catch (const std:: exception &e) {
-                                NSLog(@"subWallet SyncStop error: %s", e.what());
-                            }
-                        }
-                    }
-                }
-
-                [subwalletListenerMDict removeAllObjects];
-                // TODO: crash in spvsdk sometimes
-//                delete mMasterWalletManager;
-                mMasterWalletManager = nil;
-            } catch (const std:: exception &e) {
-                NSLog(@"wallet plugin dispose error: %s", e.what());
-            }
-
-            dispatch_semaphore_signal(walletSemaphore);
+            [self destroyMasterWalletManager];
         }
     }
 
     [super dispose];
 }
 
-- (void)coolMethod:(CDVInvokedUrlCommand *)command
+- (void)destroyMasterWalletManager
 {
-    CDVPluginResult* pluginResult = nil;
-    NSString* echo = [command.arguments objectAtIndex:0];
+  if (mMasterWalletManager != nil) {
+        [subwalletListenerMDict removeAllObjects];
+        subwalletListenerMDict = nil;
 
-    if (echo != nil && [echo length] > 0) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:echo];
-    } else {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-    }
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
+        try {
+            dispatch_semaphore_wait(walletSemaphore, DISPATCH_TIME_FOREVER);
 
-- (void)print:(CDVInvokedUrlCommand *)command
-{
-    CDVPluginResult *pluginResult = nil;
-    NSString *text = [command.arguments objectAtIndex:0];
+            IMasterWalletVector masterWallets = mMasterWalletManager->GetAllMasterWallets();
 
-    if(!text || ![text isEqualToString:@""]) {
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[self parseOneParam:@"text" value:text]];
+            for (int i = 0; i < masterWallets.size(); i++) {
+                IMasterWallet *masterWallet = masterWallets[i];
+                String masterWalletID = masterWallet->GetID();
+
+                ISubWalletVector subWallets = masterWallet->GetAllSubWallets();
+                for (int j = 0; j < subWallets.size(); j++) {
+                    String chainID = subWallets[j]->GetChainID();
+                    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+                    if (subWallet != nil) {
+                        try {
+                            subWallet->SyncStop();
+                            subWallet->RemoveCallback();
+                        } catch (const std:: exception &e) {
+                            NSLog(@"subWallet SyncStop error: %s", e.what());
+                        }
+                    }
+                }
+            }
+
+            // TODO: crash in spvsdk sometimes
+//            delete mMasterWalletManager;
+            mMasterWalletManager = nil;
+        } catch (const std:: exception &e) {
+            NSLog(@"wallet plugin dispose error: %s", e.what());
+        }
+
+        dispatch_semaphore_signal(walletSemaphore);
     }
-    else {
-        NSString *error = @"Text not can be null";
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:error];
-    }
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)addWalletListener
@@ -692,8 +624,62 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
         return;
     }
 
-    ElISubWalletCallback *subCallback =  new ElISubWalletCallback(masterWalletID, chainID, mEthscjsonrpcUrl, mEthscapimiscUrl, subwalletListenerMDict);
+    ElISubWalletCallback *subCallback =  new ElISubWalletCallback(masterWalletID, chainID, s_ethscjsonrpcUrl, s_ethscapimiscUrl, subwalletListenerMDict);
     subWallet->AddCallback(subCallback);
+}
+
+- (void)init:(CDVInvokedUrlCommand *)command
+{
+    if (nil != mMasterWalletManager) {
+        return [self successAsString:command msg:@""];
+    }
+
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    s_did = [self cstringWithString:[args objectAtIndex:idx++]];
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+
+    // TODO:check the did
+    if (s_did.length() == 0) {
+        return [self exceptionProcess:command string:"Invalid did"];
+    }
+
+    NSString *rootPath = [NSString stringWithFormat:@"%@/Documents/spv/%s/spv", NSHomeDirectory(), s_did.c_str()];
+    s_dataRootPath = [rootPath stringByAppendingString:@"/data/"];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if (![fm fileExistsAtPath:s_dataRootPath]) {
+        [fm createDirectoryAtPath:s_dataRootPath withIntermediateDirectories:true attributes:NULL error:NULL];
+    }
+
+    try {
+        NSLog(@"WALLETTEST new MasterWalletManager rootPath: %@,  dataPath:%@", rootPath, s_dataRootPath);
+        mMasterWalletManager = new MasterWalletManager([rootPath UTF8String], [s_netType UTF8String],
+                [s_netConfig UTF8String], [s_dataRootPath UTF8String]);
+        mMasterWalletManager->SetLogLevel(s_logLevel);
+
+        [self addWalletListener];
+
+        walletSemaphore = dispatch_semaphore_create(1);
+
+        return [self successAsString:command msg:@""];
+    } catch (const std:: exception & e ) {
+        NSString *errString=[self stringWithCString:e.what()];
+        NSLog(@"init MasterWalletManager error: %@", errString);
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)destroy:(CDVInvokedUrlCommand *)command
+{
+    try {
+        [self destroyMasterWalletManager];
+        return [self successAsString:command msg:@""];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
 }
 
 - (void)getAllMasterWallets:(CDVInvokedUrlCommand *)command
@@ -844,14 +830,17 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     [dict setValue:command forKey:@"command"];
     [dict setValue:self.commandDelegate forKey:@"commandDelegate"];
-
-    NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
+    // TODO use cordova.hashcode
+//    NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self cordova], [self getModeId]];
+    NSString *key = @"test";
     [subwalletListenerMDict setValue:dict forKey:key];
 }
 
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command
 {
-    NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
+    //TODO
+//    NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
+    NSString *key = @"test";
     [subwalletListenerMDict removeObjectForKey:key];
     return [self successAsString:command msg:@"remove listener"];
 }
@@ -1753,10 +1742,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     String chainID        = [self cstringWithString:args[idx++]];
     Json payloadJson      = [self jsonWithDict:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
+    String fee            = args.count == idx ? "10000" : [self cstringWithString:args[idx]];
 
-    if (args.count != idx) {
-        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
     ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
     if (subWallet == nil) {
         NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
@@ -1769,7 +1756,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 
     try {
-        Json json = idchainSubWallet->CreateIDTransaction(payloadJson, memo);
+        Json json = idchainSubWallet->CreateIDTransaction(payloadJson, memo, fee);
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
@@ -1882,12 +1869,35 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    if (mMasterWalletManager == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@", @"Master wallet manager has not initialize"];
-        return [self errorProcess:command code:errCodeInvalidMasterWalletManager msg:msg];
+
+    s_logLevel = loglevel;
+    if (nil != mMasterWalletManager) {
+        mMasterWalletManager->SetLogLevel(loglevel);
     }
-    mMasterWalletManager->SetLogLevel(loglevel);
     return [self successAsString:command msg:@"SetLogLevel OK"];
+}
+
+- (void)setNetwork:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+    s_netType           = args[idx++];
+    s_netConfig         = args[idx++];
+    s_ethscjsonrpcUrl   = [self cstringWithString:args[idx++]];
+    s_ethscapimiscUrl   = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+
+    // TODO user set the s_ethscGetTokenListUrl?
+    if ([s_netType isEqual: @"TestNet"]) {
+        s_ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
+    } else {
+        s_ethscGetTokenListUrl = "https://eth.elastos.io";
+    }
+
+    return [self successAsString:command msg:@""];
 }
 
 - (void)generateProducerPayload:(CDVInvokedUrlCommand *)command
@@ -3490,7 +3500,7 @@ String const ETHSC = "ETHSC";
     NSArray *args = command.arguments;
     String address = [self cstringWithString:args[0]];
 
-    WalletHttprequest* walletHttprequest = new WalletHttprequest(mEthscGetTokenListUrl);
+    WalletHttprequest* walletHttprequest = new WalletHttprequest(s_ethscGetTokenListUrl);
     if (walletHttprequest == nil) {
         NSString *msg = @"getERC20TokenList: fail to new WalletHttprequest.";
         return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
@@ -3739,10 +3749,10 @@ NSString *tmpDebug;
 
 -(String)getSPVSyncStateFolderPath:(String)masterWalletID
 {
-    if ([netType isEqual: @"TestNet"]) {
-        return [[NSString stringWithFormat:@"%@/spv/data/TestNet/%@", [self getDataPath], [self stringWithCString:masterWalletID]] UTF8String];
+    if ([s_netType isEqual: @"TestNet"]) {
+        return [[NSString stringWithFormat:@"%@/TestNet/%@", s_dataRootPath, [self stringWithCString:masterWalletID]] UTF8String];
     } else {
-        return [[NSString stringWithFormat:@"%@/spv/data/%@", [self getDataPath], [self stringWithCString:masterWalletID]] UTF8String];
+        return [[NSString stringWithFormat:@"%@/%@", s_dataRootPath, [self stringWithCString:masterWalletID]] UTF8String];
     }
 }
 

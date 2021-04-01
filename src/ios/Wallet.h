@@ -22,6 +22,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Cordova/CDV.h>
+#import <Cordova/CDVPlugin.h>
 #import "IMasterWallet.h"
 #import "MasterWalletManager.h"
 #import "ISidechainSubWallet.h"
@@ -30,7 +31,6 @@
 #import "IEthSidechainSubWallet.h"
 #import <string.h>
 #import <map>
-#import "TrinityPlugin.h"
 
 typedef Elastos::ElaWallet::IMasterWallet IMasterWallet;
 typedef Elastos::ElaWallet::MasterWalletManager MasterWalletManager;
@@ -53,14 +53,18 @@ static NSMutableDictionary *backupFileReaderMap = [[NSMutableDictionary alloc] i
 static NSMutableDictionary *backupFileWriterMap = [[NSMutableDictionary alloc] init];
 static MasterWalletManager *mMasterWalletManager = nil;
 static dispatch_semaphore_t walletSemaphore;
-static NSString *currentDid = nil;
-static NSString *netType = @"MainNet";
 // for ethsc http request
-String mEthscjsonrpcUrl;
-String mEthscapimiscUrl;
-String mEthscGetTokenListUrl;
+String s_ethscjsonrpcUrl = "http://api.elastos.io:20636";
+String s_ethscapimiscUrl = "http://api.elastos.io:20634";
+String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
-@interface Wallet : TrinityPlugin {
+String s_did = "";
+NSString* s_dataRootPath = @"";
+NSString* s_netType = @"MainNet";
+NSString* s_netConfig = @"";
+String s_logLevel = "warning";
+
+@interface Wallet : CDVPlugin {
     NSString *TAG; //= @"Wallet";
 
     NSString *keySuccess;//   = "success";
@@ -89,8 +93,8 @@ String mEthscGetTokenListUrl;
 }
 
 - (void)pluginInitialize;
-- (void)coolMethod:(CDVInvokedUrlCommand *)command;
-- (void)print:(CDVInvokedUrlCommand *)command;
+- (void)init:(CDVInvokedUrlCommand *)command;
+- (void)destroy:(CDVInvokedUrlCommand *)command;
 - (void)getAllMasterWallets:(CDVInvokedUrlCommand *)command;
 - (void)createMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)generateMnemonic:(CDVInvokedUrlCommand *)command;
@@ -133,6 +137,7 @@ String mEthscGetTokenListUrl;
 - (void)destroySubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getVersion:(CDVInvokedUrlCommand *)command;
 - (void)setLogLevel:(CDVInvokedUrlCommand *)command;
+- (void)setNetwork:(CDVInvokedUrlCommand *)command;
 
 // MainchainSubwallet
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;

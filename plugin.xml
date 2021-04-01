@@ -22,9 +22,6 @@
                 <param name="ios-package" value="Wallet" />
             </feature>
         </config-file>
-        <!-- for native wallet
-          <source-file src="src/ios/SPVWallet.mm" />
-        <header-file src="src/ios/SPVWallet.h" /> -->
         <source-file src="src/ios/Wallet.mm" />
         <header-file src="src/ios/Wallet.h" />
         <source-file src="src/ios/WalletHttprequest.mm" />

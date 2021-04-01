@@ -22,9 +22,7 @@
 
 #import "WalletHttprequest.h"
 #import <Cordova/CDVCommandDelegate.h>
-#import "WrapSwift.h"
 
-#import "TrinityPlugin.h"
 #pragma mark - WalletHttprequest C++
 
 //using namespace Elastos::ElaWallet;

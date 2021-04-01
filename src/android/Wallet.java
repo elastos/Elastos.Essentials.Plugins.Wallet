@@ -1995,7 +1995,7 @@ public class Wallet extends CordovaPlugin {
     public void removeWalletListener(JSONArray args, CallbackContext cc) {
         int cordovaHashCode = this.cordova.hashCode();
         subwalletListenerMap.remove(cordovaHashCode);
-        // Listener, can't call cc.success
+        cc.success("");
     }
 
     // args[0]: String masterWalletID
