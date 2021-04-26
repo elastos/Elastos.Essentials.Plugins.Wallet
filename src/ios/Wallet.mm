@@ -830,17 +830,13 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     [dict setValue:command forKey:@"command"];
     [dict setValue:self.commandDelegate forKey:@"commandDelegate"];
-    // TODO use cordova.hashcode
-//    NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self cordova], [self getModeId]];
-    NSString *key = @"test";
+    NSString *key = command.callbackId;
     [subwalletListenerMDict setValue:dict forKey:key];
 }
 
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command
 {
-    //TODO
-//    NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
-    NSString *key = @"test";
+    NSString *key = command.callbackId;
     [subwalletListenerMDict removeObjectForKey:key];
     return [self successAsString:command msg:@"remove listener"];
 }
