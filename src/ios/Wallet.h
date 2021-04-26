@@ -72,6 +72,7 @@ String s_logLevel = "warning";
     NSString *keyCode;//      = "code";
     NSString *keyMessage;//   = "message";
     NSString *keyException;// = "exception";
+    NSString *listenerCallbackId;
 
     int errCodeParseJsonInAction;//          = 10000;
     int errCodeInvalidArg      ;//           = 10001;

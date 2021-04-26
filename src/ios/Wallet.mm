@@ -517,6 +517,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     keyCode      = @"code";
     keyMessage   = @"message";
     keyException = @"exception";
+    listenerCallbackId = @"";
 
     errCodeParseJsonInAction          = 10000;
     errCodeInvalidArg                 = 10001;
@@ -543,8 +544,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     walletRefCount--;
 
     if (mMasterWalletManager != nil) {
-        // NSString *key = [NSString stringWithFormat:@"(%@:%@)", [self did], [self getModeId]];
-        // [subwalletListenerMDict removeObjectForKey:key];
+        [subwalletListenerMDict removeObjectForKey:listenerCallbackId];
 
         if (0 == walletRefCount) {
             [self destroyMasterWalletManager];
@@ -830,8 +830,8 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     [dict setValue:command forKey:@"command"];
     [dict setValue:self.commandDelegate forKey:@"commandDelegate"];
-    NSString *key = command.callbackId;
-    [subwalletListenerMDict setValue:dict forKey:key];
+    listenerCallbackId = command.callbackId;
+    [subwalletListenerMDict setValue:dict forKey:listenerCallbackId];
 }
 
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command
