@@ -101,14 +101,9 @@ String s_logLevel = "warning";
 - (void)createSubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
 - (void)registerWalletListener:(CDVInvokedUrlCommand *)command;
-- (void)getBalance:(CDVInvokedUrlCommand *)command;
-- (void)getBalanceInfo:(CDVInvokedUrlCommand *)command;
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
-- (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getLastBlockInfo:(CDVInvokedUrlCommand *)command;
 - (void)createAddress:(CDVInvokedUrlCommand *)command;
-- (void)getGenesisAddress:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)verifyPassPhrase:(CDVInvokedUrlCommand *)command;
@@ -126,9 +121,7 @@ String s_logLevel = "warning";
 - (void)isSubWalletAddressValid:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getAllUTXOs:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
-- (void)publishTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
@@ -142,13 +135,7 @@ String s_logLevel = "warning";
 // MainchainSubwallet
 - (void)createDepositTransaction:(CDVInvokedUrlCommand *)command;
 // Vote
-- (void)createVoteProducerTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createVoteCRTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createVoteCRCProposalTransaction:(CDVInvokedUrlCommand *)command;
-- (void)createImpeachmentCRCTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getVotedProducerList:(CDVInvokedUrlCommand *)command;
-- (void)getVotedCRList:(CDVInvokedUrlCommand *)command;
-- (void)getVoteInfo:(CDVInvokedUrlCommand *)command;
+- (void)createVoteTransaction:(CDVInvokedUrlCommand *)command;
 
 // Producer
 - (void)generateProducerPayload:(CDVInvokedUrlCommand *)command;
@@ -203,10 +190,6 @@ String s_logLevel = "warning";
 - (void)proposalWithdrawDigest:(CDVInvokedUrlCommand *)command;
 - (void)createProposalWithdrawTransaction:(CDVInvokedUrlCommand *)command;
 
-
-- (void)syncStart:(CDVInvokedUrlCommand *)command;
-- (void)syncStop:(CDVInvokedUrlCommand *)command;
-- (void)reSync:(CDVInvokedUrlCommand *)command;
 - (void)getAllDID:(CDVInvokedUrlCommand *)command;
 - (void)didSign:(CDVInvokedUrlCommand *)command;
 - (void)didSignDigest:(CDVInvokedUrlCommand *)command;
