@@ -173,30 +173,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     //SubWallet
 
-    syncStart(args, success, error) {
-      exec(success, error, "Wallet", "syncStart", args);
-    };
-
-    syncStop(args, success, error) {
-        exec(success, error, "Wallet", "syncStop", args);
-    };
-
-    reSync(args, success, error) {
-        exec(success, error, "Wallet", "reSync", args);
-    };
-
-    getBalanceInfo(args, success, error) {
-        exec(success, error, "Wallet", "getBalanceInfo", args);
-    };
-
-    getBalance(args, success, error) {
-        exec(success, error, "Wallet", "getBalance", args);
-    };
-
-    getBalanceWithAddress(args, success, error) {
-        exec(success, error, "Wallet", "getBalanceWithAddress", args);
-    };
-
     createAddress(args, success, error) {
         exec(success, error, "Wallet", "createAddress", args);
     };
@@ -213,28 +189,12 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createTransaction", args);
     };
 
-    getAllUTXOs(args, success, error) {
-        _exec(success, error, "Wallet", "getAllUTXOs", args);
-    };
-
-    createConsolidateTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createConsolidateTransaction", args);
-    };
-
     signTransaction(args, success, error) {
         exec(success, error, "Wallet", "signTransaction", args);
     };
 
     getTransactionSignedInfo(args, success, error) {
         _exec(success, error, "Wallet", "getTransactionSignedInfo", args);
-    };
-
-    publishTransaction(args, success, error) {
-        _exec(success, error, "Wallet", "publishTransaction", args);
-    };
-
-    getAllTransaction(args, success, error) {
-        _exec(success, error, "Wallet", "getAllTransaction", args);
     };
 
     registerWalletListener(args, success, error) {
@@ -245,18 +205,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "removeWalletListener", args);
     };
 
-    getLastBlockInfo(args, success, error) {
-        _exec(success, error, "Wallet", "getLastBlockInfo", args);
-    };
-
     //SideChainSubWallet
 
     createWithdrawTransaction(args, success, error) {
         exec(success, error, "Wallet", "createWithdrawTransaction", args);
-    };
-
-    getGenesisAddress(args, success, error) {
-        exec(success, error, "Wallet", "getGenesisAddress", args);
     };
 
     // IDChainSubWallet
@@ -318,32 +270,11 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     // Vote
-    createVoteProducerTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteProducerTransaction", args);
-    };
 
-    createVoteCRTransaction(args, success, error) {
+    createVoteTransaction(args, success, error) {
         exec(success, error, "Wallet", "createVoteCRTransaction", args);
     };
 
-    createVoteCRCProposalTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteCRCProposalTransaction", args);
-    };
-    createImpeachmentCRCTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createImpeachmentCRCTransaction", args);
-    };
-
-    getVotedProducerList(args, success, error) {
-        exec(success, error, "Wallet", "getVotedProducerList", args);
-    };
-
-    getVotedCRList(args, success, error) {
-        exec(success, error, "Wallet", "getVotedCRList", args);
-    };
-
-    getVoteInfo(args, success, error) {
-        exec(success, error, "Wallet", "getVoteInfo", args);
-    };
 
     // Producer
     generateProducerPayload(args, success, error) {
@@ -372,10 +303,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     getOwnerPublicKey(args, success, error) {
         exec(success, error, "Wallet", "getOwnerPublicKey", args);
-    };
-
-    getRegisteredProducerInfo(args, success, error) {
-        exec(success, error, "Wallet", "getRegisteredProducerInfo", args);
     };
 
     //CRC

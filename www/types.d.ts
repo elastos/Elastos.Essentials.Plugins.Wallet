@@ -344,53 +344,6 @@ declare module WalletPlugin {
         //SubWallet
 
         /**
-         * Start sync of P2P network
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         */
-        syncStart(args, success, error);
-
-        /**
-         * Stop sync of P2P network
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         */
-        syncStop(args, success, error);
-
-        /**
-         * Will delete all Merkle blocks and all transactions except the private key.
-         * And then resync from the beginning.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         */
-        reSync(args, success, error);
-
-        /**
-         * Get balances of all addresses in json format.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return balances of all addresses in json format.
-         */
-        getBalanceInfo(args, success, error);
-
-        /**
-         * Get sum of balances of all addresses according to balance type.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return sum of balances.
-         */
-        getBalance(args, success, error);
-
-        /**
-         * Get balance of only the specified address.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param address is one of addresses created by current sub wallet.
-         * @return balance of specified address.
-         */
-        getBalanceWithAddress(args, success, error);
-
-        /**
          * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
@@ -437,26 +390,6 @@ declare module WalletPlugin {
         createTransaction(args, success, error);
 
         /**
-         * Get all UTXO list. Include locked and pending and deposit utxos.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param start specify start index of all utxos list.
-         * @param count specify count of utxos we need.
-         * @param address to filter the specify address's utxos. If empty, all utxo of all addresses wil be returned.
-         * @return return all utxo in json format
-         */
-        getAllUTXOs(args, success, error);
-
-        /**
-         * Create a transaction to combine as many UTXOs as possible until transaction size reaches the max size.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param memo input memo attribute for describing.
-         * @return If success return the content of transaction in json format.
-         */
-        createConsolidateTransaction(args, success, error);
-
-        /**
          * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
@@ -481,27 +414,6 @@ declare module WalletPlugin {
         getTransactionSignedInfo(args, success, error);
 
         /**
-         * Publish a transaction to p2p network.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param tx signed transaction.
-         * @return Sent result in json format.
-         */
-        publishTransaction(args, success, error);
-
-        /**
-         * Get all qualified normal transactions sorted by descent (newest first).
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param start specify start index of all transactions list.
-         * @param count specify count of transactions we need.
-         * @param txid transaction ID to be filtered.
-         * @return All qualified transactions in json format.
-         * {"MaxCount":3,"Transactions":[{"Amount":"20000","ConfirmStatus":"6+","Direction":"Received","Height":172570,"Status":"Confirmed","Timestamp":1557910458,"TxHash":"ff454532e57837cbe04f56a7e43f4209b5eb61d5d2a43a016a769c60d21125b6","Type":6},{"Amount":"10000","ConfirmStatus":"6+","Direction":"Received","Height":172569,"Status":"Confirmed","Timestamp":1557909659,"TxHash":"7253b2cefbac794b621b0080f0f5a4c27d5c91f65c83da75aad615062c42ac5a","Type":6},{"Amount":"100000","ConfirmStatus":"6+","Direction":"Received","Height":172300,"Status":"Confirmed","Timestamp":1557809019,"TxHash":"7e53bb8fe1617bdb57f7346bcf7d2e9dfa6b5d3f3524d0695046389bea79dcd9","Type":6}]}
-         */
-        getAllTransaction(args, success, error);
-
-        /**
          * Add a sub wallet callback object listened to current sub wallet.
          */
         registerWalletListener(args, success, error);
@@ -510,12 +422,6 @@ declare module WalletPlugin {
          * Remove a sub wallet callback object listened to current sub wallet.
          */
         removeWalletListener(args, success, error);
-
-        /**
-         * Get last block information including "Height", "Timestamp", "Hash"
-         * @return information in json format.
-         */
-        getLastBlockInfo(args, success, error);
 
 
         // sideChainSubWallet
@@ -531,14 +437,6 @@ declare module WalletPlugin {
          * @return If success return the content of transaction in json format.
          */
         createWithdrawTransaction(args, success, error);
-
-        /**
-         * Get genesis address of the side chain, the address is a special address will be set to toAddress in CreateDepositTransaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return genesis address of the side chain.
-         */
-        getGenesisAddress(args, success, error);
 
         // IDChainSubWallet
 
@@ -696,38 +594,6 @@ declare module WalletPlugin {
         //////////////////////////////////////////////////
 
         /**
-         * Create vote transaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-         *                     Otherwise, pick UTXO from the specific address.
-         * @param stake        Vote amount in sela. "-1" means max.
-         * @param publicKeys   Public keys array in JSON format.
-         * @param memo         Remarks string. Can be empty string.
-         * @invalidCandidates  invalid candidate except current vote candidates. Such as:
-                                  [
-                                      {
-                                        "Type":"CRC",
-                                        "Candidates":[
-                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-                                        ]
-                                    },
-                                    {
-                                        "Type":"Delegate",
-                                        "Candidates":[
-                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-                                        ]
-                                    }
-                                ]
-         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-         */
-        createVoteProducerTransaction(args, success, error);
-
-        /**
          * Create vote cr transaction.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
@@ -760,140 +626,7 @@ declare module WalletPlugin {
                                 ]
          * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
          */
-        createVoteCRTransaction(args, success, error);
-
-        /**
-         * Create vote crc proposal transaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-         *                     Otherwise, pick UTXO from the specific address.
-         * @param votes        Proposal hash and votes in JSON format. Such as:
-         *                     {
-         *                          "109780cf45c7a6178ad674ac647545b47b10c2c3e3b0020266d0707e5ca8af7c": "100000000",
-         *                          "92990788d66bf558052d112f5498111747b3e28c55984d43fed8c8822ad9f1a7": "200000000"
-         *                     }
-         * @param memo         Remarks string. Can be empty string.
-         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-                                  [
-                                      {
-                                        "Type":"CRC",
-                                        "Candidates":[
-                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-                                        ]
-                                    },
-                                    {
-                                        "Type":"Delegate",
-                                        "Candidates":[
-                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-                                        ]
-                                    }
-                                ]
-         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-         */
-        createVoteCRCProposalTransaction(args, success, error);
-
-        /**
-         * Create impeachment crc transaction.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress  If this address is empty, SDK will pick available UTXO automatically.
-         *                     Otherwise, pick UTXO from the specific address.
-         * @param votes        CRC did and votes in JSON format. Such as:
-         *                     {
-         *                          "innnNZJLqmJ8uKfVHKFxhdqVtvipNHzmZs": "100000000",
-         *                          "iZFrhZLetd6i6qPu2MsYvE2aKrgw7Af4Ww": "200000000"
-         *                     }
-         * @param memo         Remarks string. Can be empty string.
-         * @param invalidCandidates  invalid candidate except current vote candidates. Such as:
-                                  [
-                                      {
-                                        "Type":"CRC",
-                                        "Candidates":[
-                                            "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
-                                            "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-                                            "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7"
-                                        ]
-                                    },
-                                    {
-                                        "Type":"Delegate",
-                                        "Candidates":[
-                                            "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-                                            "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-                                            "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA"
-                                        ]
-                                    }
-                                ]
-         * @return             The transaction in JSON format to be signed and published. Note: "DropVotes" means the old vote will be dropped.
-         */
-        createImpeachmentCRCTransaction(args, success, error);
-
-        /**
-         * Get vote information of current wallet.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
-         * {
-         *      "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000",
-         *      "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000",
-         *      "03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA": "5000000000"
-         * }
-         */
-        getVotedProducerList(args, success, error);
-
-        /**
-         * Get CR vote information of current wallet.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Vote information in JSON format. The key is the public key, and the value is the stake. Such as:
-         * {
-         *      "iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000",
-         *      "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"
-         * }
-         */
-        getVotedCRList(args, success, error);
-
-        /**
-         * Get summary or details of all types of votes
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @type if the type is empty, a summary of all types of votes will return. Otherwise, the details of the specified type will return.
-         * @return vote info in JSON format. Such as:
-         *
-         * summary:
-         *  [
-         *      {"Type": "Delegate", "Amount": "12345", "Timestamp": 1560888482, "Expiry": null},
-         *      {"Type": "CRC", "Amount": "56789", "Timestamp": 1560888482, "Expiry": 1561888000}
-         *  ]
-         *
-         * details:
-         *  [{
-         *      "Type": "Delegate",
-         *      "Amount": "200000000",
-         *      "Timestamp": 1560888482,
-         *      "Expiry": null,
-         *      "Votes": {"02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5": "10000000","02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D": "200000000"}
-         *  },
-         *  {
-         *      ...
-         *  }]
-         * or:
-         *  [{
-         *      "Type": "CRC",
-         *      "Amount": "300000000",
-         *      "Timestamp": 1560888482,
-         *      "Expiry": null,
-         *      "Votes": {"iYMVuGs1FscpgmghSzg243R6PzPiszrgj7": "10000000","iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP": "200000000"}
-         *  },
-         *  {
-         *      ...
-         *  }]
-         */
-        getVoteInfo(args, success, error);
+        createVoteTransaction(args, success, error);
 
         //////////////////////////////////////////////////
         /*                    Producer                  */
@@ -985,30 +718,6 @@ declare module WalletPlugin {
          */
         getOwnerPublicKey(args, success, error);
 
-        /**
-         * Get information about whether the current wallet has been registered the producer.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Information in JSON format. Such as:
-         * { "Status": "Unregistered", "Info": null }
-         *
-         * {
-         *    "Status": "Registered",
-         *    "Info": {
-         *      "OwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-         *      "NodePublicKey": "02848A8F1880408C4186ED31768331BC9296E1B0C3EC7AE6F11E9069B16013A9C5",
-         *      "NickName": "hello nickname",
-         *      "URL": "www.google.com",
-         *      "Location": 86,
-         *      "Address": 127.0.0.1,
-         *    }
-         * }
-         *
-         * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
-         *
-         * { "Status": "ReturnDeposit", "Info": null }
-         */
-        getRegisteredProducerInfo(args, success, error);
 
         //////////////////////////////////////////////////
         /*                      CRC                     */
@@ -1097,30 +806,6 @@ declare module WalletPlugin {
          * @return            The transaction in JSON format to be signed and published.
          */
         createRetrieveCRDepositTransaction(args, success, error);
-
-        /**
-         * Get information about whether the current wallet has been registered the producer.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return Information in JSON format. Such as:
-         * { "Status": "Unregistered", "Info": null }
-         *
-         * {
-         *    "Status": "Registered",
-         *    "Info": {
-         *      "CROwnerPublicKey": "02775B47CCB0808BA70EA16800385DBA2737FDA090BB0EBAE948DD16FF658CA74D",
-         *      "CROwnerDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP",
-         *      "NickName": "hello nickname",
-         *      "URL": "www.google.com",
-         *      "Location": 86,
-         *    }
-         * }
-         *
-         * { "Status": "Canceled", "Info": { "Confirms": 2016 } }
-         *
-         * { "Status": "ReturnDeposit", "Info": null }
-         */
-        getRegisteredCRInfo(args, success, error);
 
         /**
          * Generate digest for signature of CR council members
