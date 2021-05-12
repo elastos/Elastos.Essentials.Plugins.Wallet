@@ -356,6 +356,14 @@ public class Wallet extends CordovaPlugin {
         return null;
     }
 
+    private String[] JSONArray2Array(JSONArray jsonArray) throws JSONException {
+        String[] strArray = new String[jsonArray.length()];
+        for (int i=0; i<jsonArray.length(); i++) {
+            strArray[i] = jsonArray.getString(i);
+        }
+        return strArray;
+    }
+
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext cc) {
         Log.i(TAG, "action => '" + action + "'");
@@ -462,6 +470,12 @@ public class Wallet extends CordovaPlugin {
                     break;
                 case "getAllAddress":
                     this.getAllAddress(args, cc);
+                    break;
+                case "getLastAddresses":
+                    this.getLastAddresses(args, cc);
+                    break;
+                case "updateUsedAddress":
+                    this.updateUsedAddress(args, cc);
                     break;
                 case "getAllPublicKeys":
                     this.getAllPublicKeys(args, cc);
@@ -1562,6 +1576,66 @@ public class Wallet extends CordovaPlugin {
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " all addresses");
         }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: bool internal
+    public void getLastAddresses(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+      boolean internal = args.getBoolean(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+          String[] lastAddresses = subWallet.GetLastAddresses(internal);
+
+          JSONArray lastAddressesJson = new JSONArray();
+          for (int i = 0; i < lastAddresses.length; i++) {
+            lastAddressesJson.put(lastAddresses[i]);
+          }
+          cc.success(lastAddressesJson);
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " last addresses");
+      }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String[] usedAddresses
+    public void updateUsedAddress(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+      JSONArray addressArray = args.getJSONArray(idx++);
+      String[] usedAddresses = JSONArray2Array(addressArray);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+          subWallet.UpdateUsedAddress(usedAddresses);
+          cc.success("");
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, "Update " + formatWalletName(masterWalletID, chainID) + " used addresses");
+      }
     }
 
     // args[0]: String masterWalletID

@@ -1266,6 +1266,66 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     }
 }
 
+- (void)getLastAddresses:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    Boolean internal      = [args[idx++] boolValue];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        StringVector stringVec = subWallet->GetLastAddresses(internal);
+        NSMutableArray *stringArray = [[NSMutableArray alloc] init];
+        for (int i = 0; i < stringVec.size(); i++) {
+            String string = stringVec[i];
+            NSString *sstring = [self stringWithCString:string];
+            [stringArray addObject:sstring];
+        }
+
+        CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:stringArray];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+// TODO to test
+- (void)updateUsedAddress:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    Json usedAddress      = [self jsonWithDict:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        subWallet->UpdateUsedAddress(usedAddress);
+        return [self successAsString:command msg:@""];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
 - (void)getAllPublicKeys:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
