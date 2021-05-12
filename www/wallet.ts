@@ -181,6 +181,14 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "getAllAddress", args);
     };
 
+    getLastAddresses(args, success, error) {
+      _exec(success, error, "Wallet", "getLastAddresses", args);
+    };
+
+    updateUsedAddress(args, success, error) {
+      _exec(success, error, "Wallet", "updateUsedAddress", args);
+    };
+
     getAllPublicKeys(args, success, error) {
         _exec(success, error, "Wallet", "getAllPublicKeys", args);
     };

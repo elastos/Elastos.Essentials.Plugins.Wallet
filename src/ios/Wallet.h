@@ -116,6 +116,8 @@ String s_logLevel = "warning";
 - (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
 - (void)getAllAddress:(CDVInvokedUrlCommand *)command;
+- (void)getLastAddresses:(CDVInvokedUrlCommand *)command;
+- (void)updateUsedAddress:(CDVInvokedUrlCommand *)command;
 - (void)getAllPublicKeys:(CDVInvokedUrlCommand *)command;
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command;
 - (void)isSubWalletAddressValid:(CDVInvokedUrlCommand *)command;

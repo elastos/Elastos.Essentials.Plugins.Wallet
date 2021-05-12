@@ -368,6 +368,19 @@ declare module WalletPlugin {
         getAllAddress(args, success, error);
 
         /**
+         * Get last 10 external addresses or 5 internal addresses
+         * @internal indicate if addresses are change(internal) address or not
+         * @return
+         */
+        getLastAddresses(args, success, error);
+
+        /**
+         * @param usedAddresses
+         * @return none
+         */
+			  updateUsedAddress(args, success, error);
+
+        /**
          * Get all created public key list in JSON format. The parameters of start and count are used for the purpose of paging.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
