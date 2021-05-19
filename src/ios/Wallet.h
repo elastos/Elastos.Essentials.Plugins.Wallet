@@ -125,6 +125,7 @@ String s_logLevel = "warning";
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
+- (void)convertToRawTransaction:(CDVInvokedUrlCommand *)command;
 - (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;

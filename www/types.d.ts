@@ -427,6 +427,15 @@ declare module WalletPlugin {
         getTransactionSignedInfo(args, success, error);
 
         /**
+         * Convert tx to raw transaction.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param tx transaction json
+         * @return  tx in hex string format.
+         */
+         convertToRawTransaction(args, success, error);
+
+        /**
          * Add a sub wallet callback object listened to current sub wallet.
          */
         registerWalletListener(args, success, error);
