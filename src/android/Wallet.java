@@ -489,6 +489,9 @@ public class Wallet extends CordovaPlugin {
                 case "getTransactionSignedInfo":
                     this.getTransactionSignedInfo(args, cc);
                     break;
+                case "convertToRawTransaction":
+                    this.convertToRawTransaction(args, cc);
+                    break;
                 case "registerWalletListener":
                     this.registerWalletListener(args, cc);
                     break;
@@ -1757,9 +1760,37 @@ public class Wallet extends CordovaPlugin {
             String resultJson = subWallet.GetTransactionSignedInfo(rawTxJson);
             cc.success(resultJson);
         } catch (WalletException e) {
-            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " tx signed signers");
+            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " tx signed info");
         }
     }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    // args[2]: String txJson
+    public void convertToRawTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+      String txJson = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+
+          String result = subWallet.ConvertToRawTransaction(txJson);
+          cc.success(result);
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, "Convert " + formatWalletName(masterWalletID, chainID) + " To Raw Transactions");
+      }
+  }
 
     public void registerWalletListener(JSONArray args, CallbackContext cc) {
         int cordovaHashCode = this.cordova.hashCode();

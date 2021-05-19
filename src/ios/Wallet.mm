@@ -1496,7 +1496,7 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     String masterWalletID = [self cstringWithString:args[idx++]];
     String chainID        = [self cstringWithString:args[idx++]];
     Json inputs           = [self jsonWithString:args[idx++]];
-    Json outputs           = [self jsonWithString:args[idx++]];
+    Json outputs          = [self jsonWithString:args[idx++]];
     String fee            = [self cstringWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
 
@@ -1568,6 +1568,34 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     try {
         Json resultJson = subWallet->GetTransactionSignedInfo(rawTxJson);
         NSString *jsonString = [self stringWithJson:resultJson];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)convertToRawTransaction:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    Json txJson           = [self jsonWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        String rawTx = subWallet->convertToRawTransaction(txJson);
+        NSString *jsonString = [self stringWithCString:rawTx];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];

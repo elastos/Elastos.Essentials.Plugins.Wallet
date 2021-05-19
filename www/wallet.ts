@@ -205,6 +205,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "getTransactionSignedInfo", args);
     };
 
+    convertToRawTransaction(args, success, error) {
+        exec(success, error, "Wallet", "convertToRawTransaction", args);
+    };
+
     registerWalletListener(args, success, error) {
         exec(success, error, "Wallet", "registerWalletListener", args);
     };
