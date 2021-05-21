@@ -171,6 +171,14 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "resetPassword", args);
     };
 
+    registerWalletListener(args, success, error) {
+        exec(success, error, "Wallet", "registerWalletListener", args);
+    };
+
+    removeWalletListener(args, success, error) {
+        exec(success, error, "Wallet", "removeWalletListener", args);
+    };
+
     //SubWallet
 
     createAddress(args, success, error) {
@@ -207,14 +215,6 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     convertToRawTransaction(args, success, error) {
         exec(success, error, "Wallet", "convertToRawTransaction", args);
-    };
-
-    registerWalletListener(args, success, error) {
-        exec(success, error, "Wallet", "registerWalletListener", args);
-    };
-
-    removeWalletListener(args, success, error) {
-        exec(success, error, "Wallet", "removeWalletListener", args);
     };
 
     //SideChainSubWallet
@@ -273,6 +273,26 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     getTokenTransactions(args, success, error) {
         _exec(success, error, "Wallet", "getTokenTransactions", args);
+    };
+
+    getBalance(args, success, error) {
+        exec(success, error, "Wallet", "getBalance", args);
+    };
+
+    publishTransaction(args, success, error) {
+        _exec(success, error, "Wallet", "publishTransaction", args);
+    };
+
+    getAllTransaction(args, success, error) {
+        _exec(success, error, "Wallet", "getAllTransaction", args);
+    };
+
+    syncStart(args, success, error) {
+        exec(success, error, "Wallet", "syncStart", args);
+    };
+
+    syncStop(args, success, error) {
+        exec(success, error, "Wallet", "syncStop", args);
     };
 
     //MainchainSubWallet

@@ -595,6 +595,45 @@ declare module WalletPlugin {
          */
         getTokenTransactions(args, success, error);
 
+        /**
+         * Get balances of the ETH sidechain.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @return sum of balances.
+         */
+         getBalance(args, success, error);
+
+        /**
+         * Publish a transaction to p2p network.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param tx signed transaction.
+         * @return Sent result in json format.
+         */
+         publishTransaction(args, success, error);
+
+         /**
+         * Get all qualified normal transactions sorted by descent (newest first).
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param start specify start index of all transactions list.
+         * @param count specify count of transactions we need.
+         * @param txid transaction ID to be filtered.
+         * @return All qualified transactions in json format.
+         * {"MaxCount":3,"Transactions":[{"Amount":"20000","ConfirmStatus":"6+","Direction":"Received","Height":172570,"Status":"Confirmed","Timestamp":1557910458,"TxHash":"ff454532e57837cbe04f56a7e43f4209b5eb61d5d2a43a016a769c60d21125b6","Type":6},{"Amount":"10000","ConfirmStatus":"6+","Direction":"Received","Height":172569,"Status":"Confirmed","Timestamp":1557909659,"TxHash":"7253b2cefbac794b621b0080f0f5a4c27d5c91f65c83da75aad615062c42ac5a","Type":6},{"Amount":"100000","ConfirmStatus":"6+","Direction":"Received","Height":172300,"Status":"Confirmed","Timestamp":1557809019,"TxHash":"7e53bb8fe1617bdb57f7346bcf7d2e9dfa6b5d3f3524d0695046389bea79dcd9","Type":6}]}
+         */
+         getAllTransaction(args, success, error);
+
+
+         /**
+         * Start sync of P2P network
+         * @param masterWalletID is the unique identification of a master wallet object.
+         */
+         syncStart(args, success, error);
+
+        /**
+         * Stop sync of P2P network
+         * @param masterWalletID is the unique identification of a master wallet object.
+         */
+         syncStop(args, success, error);
+
         //MainchainSubWallet
 
         /**
