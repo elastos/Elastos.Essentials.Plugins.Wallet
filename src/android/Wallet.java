@@ -116,7 +116,6 @@ public class Wallet extends CordovaPlugin {
      */
     @Override
     public void onPause(boolean multitasking) {
-        Log.i(TAG, "onPause");
         // if (mMasterWalletManager != null) {
         // mMasterWalletManager.SaveConfigs();
         // }
@@ -130,7 +129,6 @@ public class Wallet extends CordovaPlugin {
      */
     @Override
     public void onResume(boolean multitasking) {
-        Log.i(TAG, "onResume");
         super.onResume(multitasking);
     }
 
@@ -139,7 +137,6 @@ public class Wallet extends CordovaPlugin {
      */
     @Override
     public void onStart() {
-        Log.i(TAG, "onStart");
         super.onStart();
     }
 
@@ -148,7 +145,6 @@ public class Wallet extends CordovaPlugin {
      */
     @Override
     public void onStop() {
-        Log.i(TAG, "onStop");
         super.onStop();
     }
 
@@ -179,27 +175,28 @@ public class Wallet extends CordovaPlugin {
     }
 
     private void destroyMasterWalletManager() {
-      Log.i(TAG, "destroyMasterWalletManager");
+        Log.i(TAG, "destroyMasterWalletManager");
         if (mMasterWalletManager != null) {
             subwalletListenerMap.clear();
 
             try {
                 walletSemaphore.acquire();
 
-                // ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-                // for (int i = 0; i < masterWalletList.size(); i++) {
-                //     MasterWallet masterWallet = masterWalletList.get(i);
-                //     ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-                //     for (int j = 0; j < subWallets.size(); ++j) {
-                //         String chainID = subWallets.get(j).GetChainID();
-                //         Log.i(TAG, "chainID:" + chainID);
-                //         Log.i(TAG, "SyncStop start");
-                //        subWallets.get(j).SyncStop();
-                //        subWallets.get(j).RemoveCallback();
-                //         Log.i(TAG, "SyncStop end");
-                //     }
-                // }
-                // Log.i(TAG, "start Dispose");
+                ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
+                for (int i = 0; i < masterWalletList.size(); i++) {
+                    MasterWallet masterWallet = masterWalletList.get(i);
+                    ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
+                    for (int j = 0; j < subWallets.size(); ++j) {
+                        SubWallet subWallet = subWallets.get(j);
+                        if (ETHSC.equals(subWallet.GetChainID())) {
+                            Log.i(TAG, "chainID: ETHSC SyncStop");
+                            ((EthSidechainSubWallet) subWallet).SyncStop();
+                            ((EthSidechainSubWallet) subWallet).RemoveCallback();
+                            Log.i(TAG, "SyncStop finished");
+                            break;
+                        }
+                    }
+                }
                 mMasterWalletManager.Dispose();
                 mMasterWalletManager = null;
             } catch (InterruptedException e) {
@@ -210,7 +207,6 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
-    // TODO remove it
     private void addWalletListener() {
         ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
         for (int i = 0; i < masterWalletList.size(); i++) {
@@ -218,45 +214,48 @@ public class Wallet extends CordovaPlugin {
             MasterWallet masterWallet = mMasterWalletManager.GetMasterWallet(masterWalletID);
             ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
 
+            // Only ETHSC need to addCallback
             for (int j = 0; j < subWalletList.size(); j++) {
-                String chainID = subWalletList.get(j).GetChainID();
-                addSubWalletListener(masterWalletID, chainID);
-                // subWalletList.get(j).SyncStart();
+                if (ETHSC.equals(subWalletList.get(j).GetChainID())) {
+                  addSubWalletListener(masterWalletID);
+                  // ((EthSidechainSubWallet) subWalletList.get(j)).SyncStart();
+                  break;
+                }
             }
         }
     }
-    // TODO remove it
-    private void addSubWalletListener(String masterWalletID, String chainID) {
-//        SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-//        if (subWallet == null) {
-//            return;
-//        }
-//        Log.d(TAG, "addSubWalletListener:" + masterWalletID + " " + chainID);
-//        subWallet.AddCallback(new SubWalletCallback(masterWalletID, chainID, s_ethscjsonrpcUrl, s_ethscapimiscUrl, new ISubWalletListener() {
-//            @Override
-//            public void sendResultSuccess(JSONObject jsonObject) {
-//                Log.d(TAG, jsonObject.toString());
-//
-//                if (subwalletListenerMap.isEmpty()) return;
-//
-//                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-//                pluginResult.setKeepCallback(true);
-//                for(CallbackContext cc : subwalletListenerMap.values()){
-//                    cc.sendPluginResult(pluginResult);
-//                }
-//            }
-//
-//            @Override
-//            public void sendResultError(String error) {
-//                if (subwalletListenerMap.isEmpty()) return;
-//
-//                PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, error);
-//                pluginResult.setKeepCallback(true);
-//                for(CallbackContext cc : subwalletListenerMap.values()){
-//                    cc.sendPluginResult(pluginResult);
-//                }
-//            }
-//        }));
+
+    private void addSubWalletListener(String masterWalletID) {
+        EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+        if (ethscSubWallet == null) {
+            return;
+        }
+
+        ethscSubWallet.AddCallback(new SubWalletCallback(masterWalletID, "ETHSC", s_ethscjsonrpcUrl, s_ethscapimiscUrl, new ISubWalletListener() {
+            @Override
+            public void sendResultSuccess(JSONObject jsonObject) {
+                Log.d(TAG, jsonObject.toString());
+
+                if (subwalletListenerMap.isEmpty()) return;
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
+                pluginResult.setKeepCallback(true);
+                for(CallbackContext cc : subwalletListenerMap.values()){
+                    cc.sendPluginResult(pluginResult);
+                }
+            }
+
+            @Override
+            public void sendResultError(String error) {
+                if (subwalletListenerMap.isEmpty()) return;
+
+                PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, error);
+                pluginResult.setKeepCallback(true);
+                for(CallbackContext cc : subwalletListenerMap.values()){
+                    cc.sendPluginResult(pluginResult);
+                }
+            }
+        }));
     }
 
     private String formatWalletName(String masterWalletID) {
@@ -538,8 +537,23 @@ public class Wallet extends CordovaPlugin {
                 case "getTokenTransactions":
                     this.getTokenTransactions(args, cc);
                     break;
+                case "getBalance":
+                    this.getBalance(args, cc);
+                    break;
+                case "publishTransaction":
+                    this.publishTransaction(args, cc);
+                    break;
+                case "getAllTransaction":
+                    this.getAllTransaction(args, cc);
+                    break;
+                case "syncStart":
+                    this.syncStart(args, cc);
+                    break;
+                case "syncStop":
+                    this.syncStop(args, cc);
+                    break;
 
-                // Main chain subwallet
+                    // Main chain subwallet
                 case "createDepositTransaction":
                     this.createDepositTransaction(args, cc);
                     break;
@@ -1047,9 +1061,12 @@ public class Wallet extends CordovaPlugin {
 
                 ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
                 for (int i = 0; subWalletList != null && i < subWalletList.size(); i++) {
-//                    subWalletList.get(i).SyncStop();
-//                    subWalletList.get(i).RemoveCallback();
-                    masterWallet.DestroyWallet(subWalletList.get(i));
+                    SubWallet subWallet = subWalletList.get(i);
+                    if (ETHSC.equals(subWallet.GetChainID())) {
+                        ((EthSidechainSubWallet) subWallet).SyncStop();
+                        ((EthSidechainSubWallet) subWallet).RemoveCallback();
+                    }
+                    masterWallet.DestroyWallet(subWallet);
                 }
 
                 mMasterWalletManager.DestroyWallet(masterWalletID);
@@ -1197,8 +1214,10 @@ public class Wallet extends CordovaPlugin {
                 return;
             }
 
-            addSubWalletListener(masterWalletID, chainID);
-            // subWallet.SyncStart();
+            if (ETHSC.equals(subWallet.GetChainID())) {
+                addSubWalletListener(masterWalletID);
+                // ((EthSidechainSubWallet) subWallet).SyncStart();
+            }
 
             cc.success(subWallet.GetBasicInfo());
         } catch (WalletException e) {
@@ -1340,8 +1359,10 @@ public class Wallet extends CordovaPlugin {
                 return;
             }
 
-//            subWallet.RemoveCallback();
-//            subWallet.SyncStop();
+            if (ETHSC.equals(chainID)) {
+                ((EthSidechainSubWallet) subWallet).SyncStop();
+                ((EthSidechainSubWallet) subWallet).RemoveCallback();
+            }
             masterWallet.DestroyWallet(subWallet);
 
             cc.success("Destroy " + formatWalletName(masterWalletID, chainID) + " OK");
@@ -1768,29 +1789,29 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID
     // args[2]: String txJson
     public void convertToRawTransaction(JSONArray args, CallbackContext cc) throws JSONException {
-      int idx = 0;
-      String masterWalletID = args.getString(idx++);
-      String chainID = args.getString(idx++);
-      String txJson = args.getString(idx++);
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String txJson = args.getString(idx++);
 
-      if (args.length() != idx) {
-          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-          return;
-      }
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
 
-      try {
-          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-          if (subWallet == null) {
-              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-              return;
-          }
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
 
-          String result = subWallet.ConvertToRawTransaction(txJson);
-          cc.success(result);
-      } catch (WalletException e) {
-          exceptionProcess(e, cc, "Convert " + formatWalletName(masterWalletID, chainID) + " To Raw Transactions");
-      }
-  }
+            String result = subWallet.ConvertToRawTransaction(txJson);
+            cc.success(result);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Convert " + formatWalletName(masterWalletID, chainID) + " To Raw Transactions");
+        }
+    }
 
     public void registerWalletListener(JSONArray args, CallbackContext cc) {
         int cordovaHashCode = this.cordova.hashCode();
@@ -2147,6 +2168,136 @@ public class Wallet extends CordovaPlugin {
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " get token transactions");
         }
+    }
+
+    // args[0]: String masterWalletID
+    public void getBalance(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+            if (ethscSubWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet,
+                        "Get " + formatWalletName(masterWalletID, ETHSC) + " balance");
+                return;
+            }
+
+            cc.success(ethscSubWallet.GetBalance());
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, ETHSC) + " balance");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String rawTxJson
+    // return: String resultJson
+    public void publishTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String rawTxJson = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+            if (ethscSubWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                return;
+            }
+
+            String resultJson = ethscSubWallet.PublishTransaction(rawTxJson);
+            cc.success(resultJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Publish " + formatWalletName(masterWalletID, ETHSC) + " transaction");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: int start
+    // args[2]: int count
+    // args[3]: String addressOrTxId
+    // return: String txJson
+    public void getAllTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        int start = args.getInt(idx++);
+        int count = args.getInt(idx++);
+        String addressOrTxId = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+            if (ethscSubWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                return;
+            }
+
+            String txJson = ethscSubWallet.GetAllTransaction(start, count, addressOrTxId);
+            cc.success(txJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, ETHSC) + " all transaction");
+        }
+    }
+
+    public void syncStart(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+                if (ethscSubWallet == null) {
+                    errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                    return;
+                }
+                ethscSubWallet.SyncStart();
+                cc.success("SyncStart OK");
+            } catch (Exception e) {
+                exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " sync start");
+            }
+        }).start();
+    }
+
+    public void syncStop(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+                if (ethscSubWallet == null) {
+                    errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                    return;
+                }
+                ethscSubWallet.SyncStop();
+                cc.success("SyncStop OK");
+            } catch (Exception e) {
+                exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " sync stop");
+            }
+        }).start();
     }
 
     // MainchainSubWallet
