@@ -88,7 +88,6 @@ public class Wallet extends CordovaPlugin {
     private static String s_ethscapimiscUrl = "http://api.elastos.io:20634";
     private static String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
-    private static String s_did = "";
     private static String s_dataRootPath = "";
     private static String s_netType = "MainNet";
     private static String s_netConfig = "";
@@ -732,17 +731,22 @@ public class Wallet extends CordovaPlugin {
         }
 
         int idx = 0;
-        s_did = args.getString(idx++);
+        String dir = args.getString(idx++);
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
             return;
         }
 
-        if ((s_did == null) || s_did.isEmpty()) {
-            errorProcess(cc, errCodeInvalidDID, "Invalid did");
+        if ((dir == null) || dir.isEmpty()) {
+            errorProcess(cc, errCodeInvalidDID, "Invalid dir");
         }
 
-        String rootPath = cordova.getActivity().getFilesDir() + "/" + s_did + "/spv";
+        String rootPath = dir;
+        if (!dir.startsWith("/")) {
+            rootPath = cordova.getActivity().getFilesDir() + "/" + dir;
+        }
+        rootPath = rootPath + "/spv";
+
         s_dataRootPath = rootPath + "/data/";
         File destDir = new File(s_dataRootPath);
         if (!destDir.exists()) {

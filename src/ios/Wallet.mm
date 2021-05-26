@@ -637,17 +637,22 @@ void ElISubWalletCallback::SendPluginResult(NSDictionary* dict)
     int idx = 0;
     NSArray *args = command.arguments;
 
-    s_did = [self cstringWithString:[args objectAtIndex:idx++]];
+    String dir = [self cstringWithString:[args objectAtIndex:idx++]];
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
 
     // TODO:check the did
-    if (s_did.length() == 0) {
-        return [self exceptionProcess:command string:"Invalid did"];
+    if (dir.length() == 0) {
+        return [self exceptionProcess:command string:"Invalid dir"];
     }
 
-    NSString *rootPath = [NSString stringWithFormat:@"%@/Documents/spv/%s/spv", NSHomeDirectory(), s_did.c_str()];
+    NSString *rootPath = [NSString stringWithFormat:@"%s", dir.c_str()];
+    if (dir.c_str()[0] != '/') {
+        rootPath = [NSString stringWithFormat:@"%@/Documents/spv/%s", NSHomeDirectory(), dir.c_str()];
+    }
+    rootPath = [rootPath stringByAppendingString:@"/spv"];
+
     s_dataRootPath = [rootPath stringByAppendingString:@"/data/"];
     NSFileManager *fm = [NSFileManager defaultManager];
     if (![fm fileExistsAtPath:s_dataRootPath]) {

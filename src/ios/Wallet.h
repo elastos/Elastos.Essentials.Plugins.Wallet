@@ -58,7 +58,6 @@ String s_ethscjsonrpcUrl = "http://api.elastos.io:20636";
 String s_ethscapimiscUrl = "http://api.elastos.io:20634";
 String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
-String s_did = "";
 NSString* s_dataRootPath = @"";
 NSString* s_netType = @"MainNet";
 NSString* s_netConfig = @"";
