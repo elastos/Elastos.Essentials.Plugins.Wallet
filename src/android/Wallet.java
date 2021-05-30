@@ -2277,10 +2277,12 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String inputs
-    // args[3]: String lockedAddress
+    // args[3]: String sideChainID
     // args[4]: String amount
     // args[5]: String sideChainAddress
-    // args[6]: String memo
+    // args[6]: String lockAddress
+    // args[7]: String fee
+    // args[8]: String memo
     public void createDepositTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
@@ -2327,8 +2329,8 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String chainID (only main chain ID 'ELA')
     // args[2]: String inputs
     // args[3]: String votes JSONObject
-    // args[4]: String memo
-    // args[5]: String invalidCandidates
+    // args[4]: String fee
+    // args[5]: String memo
     public void createVoteTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
@@ -3418,7 +3420,8 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String inputs
     // args[3]: String amount
     // args[4]: String mainchainAdress
-    // args[5]: String memo
+    // args[5]: String fee
+    // args[6]: String memo
     public void createWithdrawTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);

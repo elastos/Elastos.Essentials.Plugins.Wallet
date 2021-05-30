@@ -304,7 +304,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     // Vote
 
     createVoteTransaction(args, success, error) {
-        exec(success, error, "Wallet", "createVoteCRTransaction", args);
+        exec(success, error, "Wallet", "createVoteTransaction", args);
     };
 
 
