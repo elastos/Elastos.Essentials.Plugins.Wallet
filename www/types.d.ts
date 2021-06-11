@@ -435,16 +435,6 @@ declare module WalletPlugin {
          */
          convertToRawTransaction(args, success, error);
 
-        /**
-         * Add a sub wallet callback object listened to current sub wallet.
-         */
-        registerWalletListener(args, success, error);
-
-        /**
-         * Remove a sub wallet callback object listened to current sub wallet.
-         */
-        removeWalletListener(args, success, error);
-
 
         // sideChainSubWallet
 
@@ -575,64 +565,6 @@ declare module WalletPlugin {
          * @return
          */
         createTransferGeneric(args, success, error);
-
-        /**
-         *
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param tx  The transaction in JSON format.(must have ID)
-         * @return
-         */
-        deleteTransfer(args, success, error);
-
-        /**
-         *
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param start
-         * @param count
-         * @param txid
-         * @param tokenSymbol
-         * @return
-         */
-        getTokenTransactions(args, success, error);
-
-        /**
-         * Get balances of the ETH sidechain.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @return sum of balances.
-         */
-         getBalance(args, success, error);
-
-        /**
-         * Publish a transaction to p2p network.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param tx signed transaction.
-         * @return Sent result in json format.
-         */
-         publishTransaction(args, success, error);
-
-         /**
-         * Get all qualified normal transactions sorted by descent (newest first).
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param start specify start index of all transactions list.
-         * @param count specify count of transactions we need.
-         * @param txid transaction ID to be filtered.
-         * @return All qualified transactions in json format.
-         * {"MaxCount":3,"Transactions":[{"Amount":"20000","ConfirmStatus":"6+","Direction":"Received","Height":172570,"Status":"Confirmed","Timestamp":1557910458,"TxHash":"ff454532e57837cbe04f56a7e43f4209b5eb61d5d2a43a016a769c60d21125b6","Type":6},{"Amount":"10000","ConfirmStatus":"6+","Direction":"Received","Height":172569,"Status":"Confirmed","Timestamp":1557909659,"TxHash":"7253b2cefbac794b621b0080f0f5a4c27d5c91f65c83da75aad615062c42ac5a","Type":6},{"Amount":"100000","ConfirmStatus":"6+","Direction":"Received","Height":172300,"Status":"Confirmed","Timestamp":1557809019,"TxHash":"7e53bb8fe1617bdb57f7346bcf7d2e9dfa6b5d3f3524d0695046389bea79dcd9","Type":6}]}
-         */
-         getAllTransaction(args, success, error);
-
-
-         /**
-         * Start sync of P2P network
-         * @param masterWalletID is the unique identification of a master wallet object.
-         */
-         syncStart(args, success, error);
-
-        /**
-         * Stop sync of P2P network
-         * @param masterWalletID is the unique identification of a master wallet object.
-         */
-         syncStop(args, success, error);
 
         //MainchainSubWallet
 
@@ -1284,30 +1216,6 @@ declare module WalletPlugin {
          */
         getERC20TokenList(address: string) : Promise<ERC20TokenInfo[]>;
 
-        //////////////////////////////////////////////////
-        /*               Backup and restore             */
-        //////////////////////////////////////////////////
-
-        /**
-         * Returns the list of files (info only) to backup for the wallet, and for each of them,
-         * its current size and last modified date.
-         *
-         * Backup files contain only information about the SPV synchronization state. They do not contain any
-         * private information.
-         */
-        getBackupInfo(masterWalletID: string): Promise<BackupInfo>;
-
-        /**
-         * Returns a Reader instance that can be used to read the target backup file content in order to save
-         * it somewhere else.
-         */
-        getBackupFile(masterWalletID: string, fileName: string): Promise<BackupFileReader>;
-
-        /**
-         * Returns a Writer instance that can be used to overwrite one of the SPV synchronization files in order
-         * to restore a more recent state of the wallet.
-         */
-        restoreBackupFile(masterWalletID: string, fileName: string): Promise<BackupFileWriter>;
     }
 
     /**
@@ -1320,36 +1228,5 @@ declare module WalletPlugin {
         decimals: string;
         contractAddress: string;
         balance: string;
-    }
-
-    /**
-     * Reader allowing to read backup files content in chunks.
-     */
-    class BackupFileReader {
-        read(bytesCount: number): Promise<Uint8Array>;
-        close();
-    }
-
-    /**
-     * Writer allowing to write backup files content in chunks.
-     */
-    class BackupFileWriter {
-        write(bytes: Uint8Array): Promise<void>;
-        close();
-    }
-
-    /**
-     * Information about
-     */
-    type BackupFile = {
-        fileName: string; // File name in device storage
-        fileSize: number; // Size in bytes
-        lastModified: Date;
-    }
-
-    class BackupInfo {
-        ELADatabase: BackupFile; // .db file for the ELA subwallet sync state
-        IDChainDatabase: BackupFile; // .db file for the ID sidechain subwallet sync state
-        ETHChainDatabase: BackupFile; // .db file for the ETH sidechain subwallet sync state
     }
 }
