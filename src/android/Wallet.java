@@ -26,36 +26,24 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.PluginResult;
 
 import org.elastos.spvcore.EthSidechainSubWallet;
-import org.elastos.spvcore.ISubWalletListener;
 import org.elastos.spvcore.MasterWallet;
 import org.elastos.spvcore.SubWallet;
 import org.elastos.spvcore.MainchainSubWallet;
 import org.elastos.spvcore.IDChainSubWallet;
 import org.elastos.spvcore.SidechainSubWallet;
 import org.elastos.spvcore.MasterWalletManager;
-import org.elastos.spvcore.SubWalletCallback;
 import org.elastos.spvcore.WalletException;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
-import android.util.Base64;
 import android.util.Log;
 
 /**
@@ -64,11 +52,6 @@ import android.util.Log;
 public class Wallet extends CordovaPlugin {
 
     private static final String TAG = "Wallet";
-
-    private static HashMap<Integer, CallbackContext> subwalletListenerMap = new HashMap<>();
-    private HashMap<String, InputStream> backupFileReaderMap = new HashMap<>();
-    private HashMap<String, Integer> backupFileReaderOffsetsMap = new HashMap<>(); // Current read offset byte position for each active reader
-    private HashMap<String, OutputStream> backupFileWriterMap = new HashMap<>();
 
     private static Semaphore walletSemaphore;
 
@@ -84,8 +67,6 @@ public class Wallet extends CordovaPlugin {
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
 
-    private static String s_ethscjsonrpcUrl = "http://api.elastos.io:20636";
-    private static String s_ethscapimiscUrl = "http://api.elastos.io:20634";
     private static String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
     private static String s_dataRootPath = "";
@@ -116,9 +97,6 @@ public class Wallet extends CordovaPlugin {
      */
     @Override
     public void onPause(boolean multitasking) {
-        // if (mMasterWalletManager != null) {
-        // mMasterWalletManager.SaveConfigs();
-        // }
         super.onPause(multitasking);
     }
 
@@ -157,9 +135,6 @@ public class Wallet extends CordovaPlugin {
         walletRefCount--;
 
         if (mMasterWalletManager != null) {
-            int cordovaHashCode = this.cordova.hashCode();
-            subwalletListenerMap.remove(cordovaHashCode);
-
             if (walletRefCount == 0) {
                 destroyMasterWalletManager();
             }
@@ -177,26 +152,9 @@ public class Wallet extends CordovaPlugin {
     private void destroyMasterWalletManager() {
         Log.i(TAG, "destroyMasterWalletManager");
         if (mMasterWalletManager != null) {
-            subwalletListenerMap.clear();
-
             try {
                 walletSemaphore.acquire();
 
-                ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-                for (int i = 0; i < masterWalletList.size(); i++) {
-                    MasterWallet masterWallet = masterWalletList.get(i);
-                    ArrayList<SubWallet> subWallets = masterWallet.GetAllSubWallets();
-                    for (int j = 0; j < subWallets.size(); ++j) {
-                        SubWallet subWallet = subWallets.get(j);
-                        if (ETHSC.equals(subWallet.GetChainID())) {
-                            Log.i(TAG, "chainID: ETHSC SyncStop");
-                            ((EthSidechainSubWallet) subWallet).SyncStop();
-                            ((EthSidechainSubWallet) subWallet).RemoveCallback();
-                            Log.i(TAG, "SyncStop finished");
-                            break;
-                        }
-                    }
-                }
                 mMasterWalletManager.Dispose();
                 mMasterWalletManager = null;
             } catch (InterruptedException e) {
@@ -205,57 +163,6 @@ public class Wallet extends CordovaPlugin {
 
             walletSemaphore.release();
         }
-    }
-
-    private void addWalletListener() {
-        ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
-        for (int i = 0; i < masterWalletList.size(); i++) {
-            String masterWalletID = masterWalletList.get(i).GetID();
-            MasterWallet masterWallet = mMasterWalletManager.GetMasterWallet(masterWalletID);
-            ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
-
-            // Only ETHSC need to addCallback
-            for (int j = 0; j < subWalletList.size(); j++) {
-                if (ETHSC.equals(subWalletList.get(j).GetChainID())) {
-                  addSubWalletListener(masterWalletID);
-                  // ((EthSidechainSubWallet) subWalletList.get(j)).SyncStart();
-                  break;
-                }
-            }
-        }
-    }
-
-    private void addSubWalletListener(String masterWalletID) {
-        EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-        if (ethscSubWallet == null) {
-            return;
-        }
-
-        ethscSubWallet.AddCallback(new SubWalletCallback(masterWalletID, "ETHSC", s_ethscjsonrpcUrl, s_ethscapimiscUrl, new ISubWalletListener() {
-            @Override
-            public void sendResultSuccess(JSONObject jsonObject) {
-                Log.d(TAG, jsonObject.toString());
-
-                if (subwalletListenerMap.isEmpty()) return;
-
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, jsonObject);
-                pluginResult.setKeepCallback(true);
-                for(CallbackContext cc : subwalletListenerMap.values()){
-                    cc.sendPluginResult(pluginResult);
-                }
-            }
-
-            @Override
-            public void sendResultError(String error) {
-                if (subwalletListenerMap.isEmpty()) return;
-
-                PluginResult pluginResult = new PluginResult(PluginResult.Status.JSON_EXCEPTION, error);
-                pluginResult.setKeepCallback(true);
-                for(CallbackContext cc : subwalletListenerMap.values()){
-                    cc.sendPluginResult(pluginResult);
-                }
-            }
-        }));
     }
 
     private String formatWalletName(String masterWalletID) {
@@ -346,6 +253,7 @@ public class Wallet extends CordovaPlugin {
 
         ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
         for (int i = 0; i < subWalletList.size(); i++) {
+            Log.d(TAG, " chain id:" + subWalletList.get(i).GetChainID());
             if (chainID.equals(subWalletList.get(i).GetChainID())) {
                 return subWalletList.get(i);
             }
@@ -491,12 +399,6 @@ public class Wallet extends CordovaPlugin {
                 case "convertToRawTransaction":
                     this.convertToRawTransaction(args, cc);
                     break;
-                case "registerWalletListener":
-                    this.registerWalletListener(args, cc);
-                    break;
-                case "removeWalletListener":
-                    this.removeWalletListener(args, cc);
-                    break;
 
                 // ID chain subwallet
                 case "createIdTransaction":
@@ -531,29 +433,8 @@ public class Wallet extends CordovaPlugin {
                 case "createTransferGeneric":
                     this.createTransferGeneric(args, cc);
                     break;
-                case "deleteTransfer":
-                    this.deleteTransfer(args, cc);
-                    break;
-                case "getTokenTransactions":
-                    this.getTokenTransactions(args, cc);
-                    break;
-                case "getBalance":
-                    this.getBalance(args, cc);
-                    break;
-                case "publishTransaction":
-                    this.publishTransaction(args, cc);
-                    break;
-                case "getAllTransaction":
-                    this.getAllTransaction(args, cc);
-                    break;
-                case "syncStart":
-                    this.syncStart(args, cc);
-                    break;
-                case "syncStop":
-                    this.syncStop(args, cc);
-                    break;
 
-                    // Main chain subwallet
+                // Main chain subwallet
                 case "createDepositTransaction":
                     this.createDepositTransaction(args, cc);
                     break;
@@ -693,29 +574,6 @@ public class Wallet extends CordovaPlugin {
                     this.getERC20TokenList(args, cc);
                     break;
 
-                // Backup and restore
-                case "getBackupInfo":
-                    this.getBackupInfo(args, cc);
-                    break;
-                case "getBackupFile":
-                    this.getBackupFile(args, cc);
-                    break;
-                case "restoreBackupFile":
-                    this.restoreBackupFile(args, cc);
-                    break;
-                case "backupFileReader_read":
-                    this.backupFileReader_read(args, cc);
-                    break;
-                case "backupFileReader_close":
-                    this.backupFileReader_close(args, cc);
-                    break;
-                case "backupFileWriter_write":
-                    this.backupFileWriter_write(args, cc);
-                    break;
-                case "backupFileWriter_close":
-                    this.backupFileWriter_close(args, cc);
-                    break;
-
                 default:
                     errorProcess(cc, errCodeActionNotFound, "Action '" + action + "' not found, please check!");
                     return false;
@@ -761,7 +619,6 @@ public class Wallet extends CordovaPlugin {
         try {
             mMasterWalletManager = new MasterWalletManager(rootPath, s_netType, s_netConfig, s_dataRootPath);
             mMasterWalletManager.SetLogLevel(s_logLevel);
-            addWalletListener();
 
             walletSemaphore = new Semaphore(1);
             cc.success("");
@@ -1059,16 +916,6 @@ public class Wallet extends CordovaPlugin {
                     return;
                 }
 
-                ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
-                for (int i = 0; subWalletList != null && i < subWalletList.size(); i++) {
-                    SubWallet subWallet = subWalletList.get(i);
-                    if (ETHSC.equals(subWallet.GetChainID())) {
-                        ((EthSidechainSubWallet) subWallet).SyncStop();
-                        ((EthSidechainSubWallet) subWallet).RemoveCallback();
-                    }
-                    masterWallet.DestroyWallet(subWallet);
-                }
-
                 mMasterWalletManager.DestroyWallet(masterWalletID);
 
                 cc.success("Destroy " + formatWalletName(masterWalletID) + " OK");
@@ -1108,14 +955,10 @@ public class Wallet extends CordovaPlugin {
 
     // args[0]: String network type
     // args[1]: String network config, only for private network.
-    // args[2]: String json rpc Url
-    // args[3]: String api misc Url
     public void setNetwork(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String networkType = args.getString(idx++);
         String networkConfig = args.getString(idx++);
-        String jsonrpcUrl = args.getString(idx++);
-        String apimiscUrl = args.getString(idx++);
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
             return;
@@ -1123,8 +966,6 @@ public class Wallet extends CordovaPlugin {
 
         s_netType = networkType;
         s_netConfig = networkConfig;
-        s_ethscjsonrpcUrl = jsonrpcUrl;
-        s_ethscapimiscUrl = apimiscUrl;
         // TODO user set the s_ethscGetTokenListUrl?
         if ("TestNet".equals(s_netType)) {
             s_ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
@@ -1212,11 +1053,6 @@ public class Wallet extends CordovaPlugin {
             if (subWallet == null) {
                 errorProcess(cc, errCodeCreateSubWallet, "Create " + formatWalletName(masterWalletID, chainID));
                 return;
-            }
-
-            if (ETHSC.equals(subWallet.GetChainID())) {
-                addSubWalletListener(masterWalletID);
-                // ((EthSidechainSubWallet) subWallet).SyncStart();
             }
 
             cc.success(subWallet.GetBasicInfo());
@@ -1359,10 +1195,6 @@ public class Wallet extends CordovaPlugin {
                 return;
             }
 
-            if (ETHSC.equals(chainID)) {
-                ((EthSidechainSubWallet) subWallet).SyncStop();
-                ((EthSidechainSubWallet) subWallet).RemoveCallback();
-            }
             masterWallet.DestroyWallet(subWallet);
 
             cc.success("Destroy " + formatWalletName(masterWalletID, chainID) + " OK");
@@ -1813,18 +1645,6 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
-    public void registerWalletListener(JSONArray args, CallbackContext cc) {
-        int cordovaHashCode = this.cordova.hashCode();
-        subwalletListenerMap.put(cordovaHashCode, cc);
-        // Listener, can't call cc.success
-    }
-
-    public void removeWalletListener(JSONArray args, CallbackContext cc) {
-        int cordovaHashCode = this.cordova.hashCode();
-        subwalletListenerMap.remove(cordovaHashCode);
-        cc.success("");
-    }
-
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String inputs
@@ -2055,12 +1875,14 @@ public class Wallet extends CordovaPlugin {
     // args[1]: String targetAddress
     // args[2]: String amount
     // args[3]: int amountUnit
+    // args[3]: long nonce
     public void createTransfer(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
         int amountUnit = args.getInt(idx++);
+        long nonce = args.getLong(idx++);
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2073,7 +1895,7 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
                 return;
             }
-            cc.success(ethscSubWallet.CreateTransfer(targetAddress, amount, amountUnit));
+            cc.success(ethscSubWallet.CreateTransfer(targetAddress, amount, amountUnit, nonce));
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " create transfer");
         }
@@ -2087,6 +1909,7 @@ public class Wallet extends CordovaPlugin {
     // args[5]: int gasPriceUnit
     // args[6]: String gasLimit
     // args[7]: String data
+    // args[8]: int nonce
     public void createTransferGeneric(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
@@ -2097,6 +1920,7 @@ public class Wallet extends CordovaPlugin {
         int gasPriceUnit = args.getInt(idx++);
         String gasLimit = args.getString(idx++);
         String data = args.getString(idx++);
+        long nonce = args.getLong(idx++);
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -2109,195 +1933,10 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
                 return;
             }
-            cc.success(ethscSubWallet.CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data));
+            cc.success(ethscSubWallet.CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data, nonce));
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " create transfer generic");
         }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: String tx: json object, must have ID
-    public void deleteTransfer(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-        String tx = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-            if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
-                return;
-            }
-            ethscSubWallet.DeleteTransfer(tx);
-            cc.success("DeleteTransfer OK");
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " delete transfer");
-        }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: int start
-    // args[2]: int count
-    // args[3]: String txid
-    // args[4]: String tokenSymbol
-    public void getTokenTransactions(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-        int start = args.getInt(idx++);
-        int count = args.getInt(idx++);
-        String txid = args.getString(idx++);
-        String tokenSymbol = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-            if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
-                return;
-            }
-            cc.success(ethscSubWallet.GetTokenTransactions(start, count, txid, tokenSymbol));
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " get token transactions");
-        }
-    }
-
-    // args[0]: String masterWalletID
-    public void getBalance(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-            if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet,
-                        "Get " + formatWalletName(masterWalletID, ETHSC) + " balance");
-                return;
-            }
-
-            cc.success(ethscSubWallet.GetBalance());
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, ETHSC) + " balance");
-        }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: String rawTxJson
-    // return: String resultJson
-    public void publishTransaction(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-        String rawTxJson = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-            if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
-                return;
-            }
-
-            String resultJson = ethscSubWallet.PublishTransaction(rawTxJson);
-            cc.success(resultJson);
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, "Publish " + formatWalletName(masterWalletID, ETHSC) + " transaction");
-        }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: int start
-    // args[2]: int count
-    // args[3]: String addressOrTxId
-    // return: String txJson
-    public void getAllTransaction(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-        int start = args.getInt(idx++);
-        int count = args.getInt(idx++);
-        String addressOrTxId = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-            if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
-                return;
-            }
-
-            String txJson = ethscSubWallet.GetAllTransaction(start, count, addressOrTxId);
-            cc.success(txJson);
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, ETHSC) + " all transaction");
-        }
-    }
-
-    public void syncStart(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        new Thread(() -> {
-            try {
-                EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-                if (ethscSubWallet == null) {
-                    errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
-                    return;
-                }
-                ethscSubWallet.SyncStart();
-                cc.success("SyncStart OK");
-            } catch (Exception e) {
-                exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " sync start");
-            }
-        }).start();
-    }
-
-    public void syncStop(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        new Thread(() -> {
-            try {
-                EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
-                if (ethscSubWallet == null) {
-                    errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
-                    return;
-                }
-                ethscSubWallet.SyncStop();
-                cc.success("SyncStop OK");
-            } catch (Exception e) {
-                exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " sync stop");
-            }
-        }).start();
     }
 
     // MainchainSubWallet
@@ -3792,218 +3431,5 @@ public class Wallet extends CordovaPlugin {
                 exceptionProcess(e, cc,  " getERC20TokenList");
             }
         }).start();
-    }
-
-    public void getBackupInfo(JSONArray args, CallbackContext cc) throws JSONException {
-        String masterWalletID = args.getString(0);
-
-        try {
-            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
-            if (masterWallet == null) {
-                errorProcess(cc, errCodeInvalidMasterWallet, "Master wallet "+masterWalletID+" not found");
-                return;
-            }
-
-            String spvSyncStateFilesPath = getSPVSyncStateFolderPath(masterWalletID);
-            JSONObject backupInfo = new JSONObject();
-
-            // ELA mainchain info
-            JSONObject elaDatabaseInfo = new JSONObject();
-            File elaDBFile = new File(spvSyncStateFilesPath + "/ELA.db");
-            if (elaDBFile.exists()) {
-                elaDatabaseInfo.put("fileName", "ELA.db");
-                elaDatabaseInfo.put("fileSize", elaDBFile.length());
-                elaDatabaseInfo.put("lastModified", elaDBFile.lastModified()); // Timestamp MS
-                backupInfo.put("ELADatabase", elaDatabaseInfo);
-            }
-
-            // ID sidechain info
-            JSONObject idChainDatabaseInfo = new JSONObject();
-            File idChainDBFile = new File(spvSyncStateFilesPath + "/IDChain.db");
-            if (idChainDBFile.exists()) {
-                idChainDatabaseInfo.put("fileName", "IDChain.db");
-                idChainDatabaseInfo.put("fileSize", idChainDBFile.length());
-                idChainDatabaseInfo.put("lastModified", idChainDBFile.lastModified()); // Timestamp MS
-                backupInfo.put("IDChainDatabase", idChainDatabaseInfo);
-            }
-
-            // ETH sidechain info
-            JSONObject ethChainDatabaseInfo = new JSONObject();
-            File ethChainDBFile = new File(spvSyncStateFilesPath + "/eth-mainnet-entities.db");
-            if (ethChainDBFile.exists()) {
-                ethChainDatabaseInfo.put("fileName", "eth-mainnet-entities.db");
-                ethChainDatabaseInfo.put("fileSize", ethChainDBFile.length());
-                ethChainDatabaseInfo.put("lastModified", ethChainDBFile.lastModified()); // Timestamp MS
-                backupInfo.put("IDChainDatabase", ethChainDatabaseInfo);
-            }
-
-            cc.success(backupInfo);
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, e.GetErrorInfo());
-        }
-    }
-
-    public void getBackupFile(JSONArray args, CallbackContext cc) throws JSONException {
-        String masterWalletID = args.getString(0);
-        String fileName = args.getString(1);
-
-        try {
-            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
-            if (masterWallet == null) {
-                errorProcess(cc, errCodeInvalidMasterWallet, "Master wallet "+masterWalletID+" not found");
-                return;
-            }
-
-            if (!ensureBackupFile(fileName)) {
-                errorProcess(cc, errCodeInvalidMasterWallet, "Invalid backup file name "+fileName);
-                return;
-            }
-
-            try {
-                // Open an input stream to read the file
-                String spvSyncStateFilesPath = getSPVSyncStateFolderPath(masterWalletID);
-                File backupFile = new File(spvSyncStateFilesPath + "/" + fileName);
-
-                BufferedInputStream reader = new BufferedInputStream(new FileInputStream(backupFile));
-
-                String objectId = "" + System.identityHashCode(reader);
-                backupFileReaderMap.put(objectId, reader);
-                backupFileReaderOffsetsMap.put(objectId, 0); // Current read offset is 0
-
-                JSONObject ret = new JSONObject();
-                ret.put("objectId", objectId);
-                cc.success(ret);
-            } catch (Exception e) {
-                errorProcess(cc, errCodeInvalidArg, e.getMessage());
-            }
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, e.GetErrorInfo());
-        }
-    }
-
-    private void backupFileReader_read(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        String readerObjectId = args.getString(0);
-        int bytesCount = args.getInt(1);
-
-        try {
-            byte[] buffer = new byte[bytesCount];
-            InputStream reader = backupFileReaderMap.get(readerObjectId);
-
-            // Resume reading at the previous read offset
-            int currentReadOffset = backupFileReaderOffsetsMap.get(readerObjectId);
-            //reader.skip(currentReadOffset);
-            int readBytes = reader.read(buffer, 0, bytesCount);
-
-            if (readBytes != -1) {
-                // Move read offset to the next position
-                backupFileReaderOffsetsMap.put(readerObjectId, currentReadOffset + readBytes);
-                callbackContext.success(Base64.encodeToString(buffer, 0, readBytes, Base64.NO_WRAP));
-            }
-            else {
-                callbackContext.success((String)null);
-            }
-        }
-        catch (IOException e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
-
-    private void backupFileReader_close(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        String readerObjectId = args.getString(0);
-
-        try {
-            InputStream reader = backupFileReaderMap.get(readerObjectId);
-            reader.close();
-            backupFileReaderMap.remove(readerObjectId);
-            backupFileReaderOffsetsMap.remove(readerObjectId);
-            callbackContext.success();
-        }
-        catch (IOException e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
-
-    public void restoreBackupFile(JSONArray args, CallbackContext cc) throws JSONException {
-        String masterWalletID = args.getString(0);
-        String fileName = args.getString(1);
-
-        try {
-            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
-            if (masterWallet == null) {
-                errorProcess(cc, errCodeInvalidMasterWallet, "Master wallet "+masterWalletID+" not found");
-                return;
-            }
-
-            if (!ensureBackupFile(fileName)) {
-                errorProcess(cc, errCodeInvalidMasterWallet, "Invalid backup file name "+fileName);
-                return;
-            }
-
-            try {
-                // Open an output stream to write the file
-                String spvSyncStateFilesPath = getSPVSyncStateFolderPath(masterWalletID);
-                File backupFile = new File(spvSyncStateFilesPath + "/" + fileName);
-
-                BufferedOutputStream writer = new BufferedOutputStream(new FileOutputStream(backupFile));
-
-                String objectId = "" + System.identityHashCode(writer);
-                backupFileWriterMap.put(objectId, writer);
-
-                JSONObject ret = new JSONObject();
-                ret.put("objectId", objectId);
-                cc.success(ret);
-            } catch (Exception e) {
-                errorProcess(cc, errCodeInvalidArg, e.getMessage());
-            }
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, e.GetErrorInfo());
-        }
-    }
-
-    private void backupFileWriter_write(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        String writerObjectId = args.getString(0);
-        String base64encodedFromUint8Array = args.getString(1);
-
-        try {
-            OutputStream writer = backupFileWriterMap.get(writerObjectId);
-
-            // Cordova encodes UInt8Array in TS to base64 encoded in java.
-            byte[] data = Base64.decode(base64encodedFromUint8Array, Base64.DEFAULT);
-            writer.write(data);
-
-            callbackContext.success();
-        }
-        catch (IOException e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
-
-    private void backupFileWriter_close(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        String writerObjectId = args.getString(0);
-
-        try {
-            OutputStream writer = backupFileWriterMap.get(writerObjectId);
-            writer.flush();
-            writer.close();
-            backupFileWriterMap.remove(writerObjectId);
-            callbackContext.success();
-        }
-        catch (IOException e) {
-            callbackContext.error(e.getMessage());
-        }
-    }
-
-    private String getSPVSyncStateFolderPath(String masterWalletID) {
-        if ("TestNet".equals(s_netType)) {
-            return s_dataRootPath + "TestNet/"+masterWalletID;
-        } else {
-            return s_dataRootPath + masterWalletID;
-        }
-    }
-
-    // Returns true if the given filename is a valid wallet file for backup (to make sure we the caller is not
-    // trying to access and unauthorized file), false otherwise.
-    private boolean ensureBackupFile(String fileName) {
-        return fileName.equals("ELA.db") || fileName.equals("IDChain.db");
     }
 }

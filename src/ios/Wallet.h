@@ -41,21 +41,14 @@ typedef std::vector<IMasterWallet *> IMasterWalletVector;
 typedef std::vector<ISubWallet *> ISubWalletVector;
 typedef std::vector<String> StringVector;
 
-typedef Elastos::ElaWallet::ISubWalletCallback ISubWalletCallback;
 typedef Elastos::ElaWallet::ISidechainSubWallet ISidechainSubWallet;
 typedef Elastos::ElaWallet::IMainchainSubWallet IMainchainSubWallet;
-typedef std::vector<ISubWalletCallback *> ISubWalletCallbackVector;
 typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 
 static int walletRefCount = 0;
-static NSMutableDictionary *subwalletListenerMDict = [[NSMutableDictionary alloc] init];
-static NSMutableDictionary *backupFileReaderMap = [[NSMutableDictionary alloc] init];
-static NSMutableDictionary *backupFileWriterMap = [[NSMutableDictionary alloc] init];
 static MasterWalletManager *mMasterWalletManager = nil;
 static dispatch_semaphore_t walletSemaphore;
 // for ethsc http request
-String s_ethscjsonrpcUrl = "http://api.elastos.io:20636";
-String s_ethscapimiscUrl = "http://api.elastos.io:20634";
 String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
 NSString* s_dataRootPath = @"";
@@ -100,7 +93,6 @@ String s_logLevel = "warning";
 - (void)generateMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createSubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
-- (void)registerWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
 - (void)createAddress:(CDVInvokedUrlCommand *)command;
@@ -126,7 +118,6 @@ String s_logLevel = "warning";
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
 - (void)convertToRawTransaction:(CDVInvokedUrlCommand *)command;
-- (void)removeWalletListener:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createWithdrawTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWallet:(CDVInvokedUrlCommand *)command;
@@ -211,14 +202,5 @@ String s_logLevel = "warning";
 - (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
 - (void)syncStart:(CDVInvokedUrlCommand *)command;
 - (void)syncStop:(CDVInvokedUrlCommand *)command;
-
-// Backup Restore
-- (void)getBackupInfo:(CDVInvokedUrlCommand *)command;
-- (void)getBackupFile:(CDVInvokedUrlCommand *)command;
-- (void)backupFileReader_read:(CDVInvokedUrlCommand *)command;
-- (void)backupFileReader_close:(CDVInvokedUrlCommand *)command;
-- (void)restoreBackupFile:(CDVInvokedUrlCommand *)command;
-- (void)backupFileWriter_write:(CDVInvokedUrlCommand *)command;
-- (void)backupFileWriter_close:(CDVInvokedUrlCommand *)command;
 
 @end
