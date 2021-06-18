@@ -3070,7 +3070,9 @@ public class Wallet extends CordovaPlugin {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
         String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
         String memo = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -3092,7 +3094,7 @@ public class Wallet extends CordovaPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-            String stringJson = mainchainSubWallet.CreateSecretaryGeneralElectionTransaction(payload, memo);
+            String stringJson = mainchainSubWallet.CreateSecretaryGeneralElectionTransaction(inputs, payload, fee, memo);
             cc.success(stringJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createSecretaryGeneralElectionTransaction");
@@ -3168,7 +3170,9 @@ public class Wallet extends CordovaPlugin {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
         String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
         String memo = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -3190,7 +3194,7 @@ public class Wallet extends CordovaPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-            String stringJson = mainchainSubWallet.CreateProposalChangeOwnerTransaction(payload, memo);
+            String stringJson = mainchainSubWallet.CreateProposalChangeOwnerTransaction(inputs, payload, fee, memo);
             cc.success(stringJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createProposalChangeOwnerTransaction");
@@ -3266,7 +3270,9 @@ public class Wallet extends CordovaPlugin {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
         String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
         String memo = args.getString(idx++);
 
         if (args.length() != idx) {
@@ -3288,7 +3294,7 @@ public class Wallet extends CordovaPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-            String stringJson = mainchainSubWallet.CreateTerminateProposalTransaction(payload, memo);
+            String stringJson = mainchainSubWallet.CreateTerminateProposalTransaction(inputs, payload, fee, memo);
             cc.success(stringJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createTerminateProposalTransaction");
