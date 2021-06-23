@@ -712,9 +712,34 @@ declare module WalletPlugin {
         getOwnerPublicKey(args, success, error);
 
 
+        /**
+         * Get address of owner public key.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @return Address of owner public key.
+         */
+        getOwnerAddress(args, success, error);
+
+        /**
+        * Get deposit address of owner.
+        * @param masterWalletID is the unique identification of a master wallet object.
+        * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+        * @return Deposit address of owner.
+        */
+        getOwnerDepositAddress(args, success, error);
+
+
         //////////////////////////////////////////////////
         /*                      CRC                     */
         //////////////////////////////////////////////////
+
+        /**
+        * Get CR deposit address.
+        * @param masterWalletID is the unique identification of a master wallet object.
+        * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+        * @return Deposit address of CR.
+        */
+        getCRDepositAddress(args, success, error);
 
         /**
          * Generate cr info payload digest for signature.

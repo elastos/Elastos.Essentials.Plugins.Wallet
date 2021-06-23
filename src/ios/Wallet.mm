@@ -1670,7 +1670,88 @@ using namespace Elastos::ElaWallet;
     return [self successAsString:command msg:jsonString];
 }
 
+- (void)getOwnerAddress:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+    IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+    if(mainchainSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", [self formatWalletNameWithString:masterWalletID other:chainID], @" is not instance of IMainchainSubWallet"];
+        return [self errorProcess:command code:errCodeSubWalletInstance msg:msg];
+    }
+
+    String msg = mainchainSubWallet->GetOwnerAddress();
+    NSString *jsonString = [self stringWithCString:msg];
+    return [self successAsString:command msg:jsonString];
+}
+
+- (void)getOwnerDepositAddress:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+    IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+    if(mainchainSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", [self formatWalletNameWithString:masterWalletID other:chainID], @" is not instance of IMainchainSubWallet"];
+        return [self errorProcess:command code:errCodeSubWalletInstance msg:msg];
+    }
+
+    String msg = mainchainSubWallet->GetOwnerDepositAddress();
+    NSString *jsonString = [self stringWithCString:msg];
+    return [self successAsString:command msg:jsonString];
+}
+
 // CR
+- (void)getCRDepositAddress:(CDVInvokedUrlCommand *)command
+{
+    int idx = 0;
+    NSArray *args = command.arguments;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    ISubWallet *subWallet = [self getSubWallet:masterWalletID :chainID];
+    if (subWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+    IMainchainSubWallet *mainchainSubWallet = dynamic_cast<IMainchainSubWallet *>(subWallet);
+    if(mainchainSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", [self formatWalletNameWithString:masterWalletID other:chainID], @" is not instance of IMainchainSubWallet"];
+        return [self errorProcess:command code:errCodeSubWalletInstance msg:msg];
+    }
+
+    String msg = mainchainSubWallet->GetCRDepositAddress();
+    NSString *jsonString = [self stringWithCString:msg];
+    return [self successAsString:command msg:jsonString];
+}
+
 - (void)generateCRInfoPayload:(CDVInvokedUrlCommand *)command
 {
     int idx = 0;

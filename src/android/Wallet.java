@@ -465,7 +465,16 @@ public class Wallet extends CordovaPlugin {
                 case "getOwnerPublicKey":
                     this.getOwnerPublicKey(args, cc);
                     break;
+                case "getOwnerAddress":
+                    this.getOwnerAddress(args, cc);
+                    break;
+                case "getOwnerDepositAddress":
+                    this.getOwnerDepositAddress(args, cc);
+                    break;
                 // -- CRC
+                case "getCRDepositAddress":
+                    this.getCRDepositAddress(args, cc);
+                    break;
                 case "generateCRInfoPayload":
                     this.generateCRInfoPayload(args, cc);
                     break;
@@ -2314,7 +2323,106 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    public void getOwnerAddress(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+
+          if (!(subWallet instanceof MainchainSubWallet)) {
+              errorProcess(cc, errCodeSubWalletInstance,
+                      formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+              return;
+          }
+
+          MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+          String address = mainchainSubWallet.GetOwnerAddress();
+          cc.success(address);
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get owner address");
+      }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    public void getOwnerDepositAddress(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+
+          if (!(subWallet instanceof MainchainSubWallet)) {
+              errorProcess(cc, errCodeSubWalletInstance,
+                      formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+              return;
+          }
+
+          MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+          String address = mainchainSubWallet.GetOwnerDepositAddress();
+          cc.success(address);
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get owner deposit address");
+      }
+    }
+
     // -- CRC
+
+    // args[0]: String masterWalletID
+    // args[1]: String chainID
+    public void getCRDepositAddress(JSONArray args, CallbackContext cc) throws JSONException {
+      int idx = 0;
+      String masterWalletID = args.getString(idx++);
+      String chainID = args.getString(idx++);
+
+      if (args.length() != idx) {
+          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+          return;
+      }
+
+      try {
+          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+          if (subWallet == null) {
+              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+              return;
+          }
+
+          if (!(subWallet instanceof MainchainSubWallet)) {
+              errorProcess(cc, errCodeSubWalletInstance,
+                      formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+              return;
+          }
+
+          MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+          String address = mainchainSubWallet.GetCRDepositAddress();
+          cc.success(address);
+      } catch (WalletException e) {
+          exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " get owner deposit address");
+      }
+    }
 
     // args[0]: String masterWalletID
     // args[1]: String chainID (only main chain ID 'ELA')

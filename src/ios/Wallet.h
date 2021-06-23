@@ -139,9 +139,12 @@ String s_logLevel = "warning";
 - (void)createCancelProducerTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createRetrieveDepositTransaction:(CDVInvokedUrlCommand *)command;
 - (void)getOwnerPublicKey:(CDVInvokedUrlCommand *)command;
+- (void)getOwnerAddress:(CDVInvokedUrlCommand *)command;
+- (void)getOwnerDepositAddress:(CDVInvokedUrlCommand *)command;
 - (void)getRegisteredProducerInfo:(CDVInvokedUrlCommand *)command;
 
 // CRC
+- (void)getCRDepositAddress:(CDVInvokedUrlCommand *)command;
 - (void)generateCRInfoPayload:(CDVInvokedUrlCommand *)command;
 - (void)generateUnregisterCRPayload:(CDVInvokedUrlCommand *)command;
 - (void)createRegisterCRTransaction:(CDVInvokedUrlCommand *)command;

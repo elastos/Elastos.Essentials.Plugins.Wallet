@@ -294,10 +294,22 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     getOwnerPublicKey(args, success, error) {
-        exec(success, error, "Wallet", "getOwnerPublicKey", args);
+      exec(success, error, "Wallet", "getOwnerPublicKey", args);
+    };
+
+    getOwnerAddress(args, success, error) {
+      exec(success, error, "Wallet", "getOwnerAddress", args);
+    };
+
+    getOwnerDepositAddress(args, success, error) {
+      exec(success, error, "Wallet", "getOwnerDepositAddress", args);
     };
 
     //CRC
+    getCRDepositAddress(args, success, error) {
+      exec(success, error, "Wallet", "getCRDepositAddress", args);
+    };
+
     generateCRInfoPayload(args, success, error) {
         _exec(success, error, "Wallet", "generateCRInfoPayload", args);
     };
