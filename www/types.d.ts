@@ -1232,26 +1232,5 @@ declare module WalletPlugin {
          * @return Transaction in JSON format.
          */
         createProposalWithdrawTransaction(args, success, error);
-
-        /**
-         * Get the erc20 token list
-         * @param address ethsc address.
-         *
-         * @return
-         */
-        getERC20TokenList(address: string) : Promise<ERC20TokenInfo[]>;
-
-    }
-
-    /**
-     * Information about ERC20 Token
-     */
-    type ERC20TokenInfo = {
-        type: string;
-        symbol: string;
-        name: string;
-        decimals: string;
-        contractAddress: string;
-        balance: string;
     }
 }

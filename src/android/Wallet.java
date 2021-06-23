@@ -67,8 +67,6 @@ public class Wallet extends CordovaPlugin {
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
 
-    private static String s_ethscGetTokenListUrl = "https://eth.elastos.io";
-
     private static String s_dataRootPath = "";
     private static String s_netType = "MainNet";
     private static String s_netConfig = "";
@@ -975,12 +973,6 @@ public class Wallet extends CordovaPlugin {
 
         s_netType = networkType;
         s_netConfig = networkConfig;
-        // TODO user set the s_ethscGetTokenListUrl?
-        if ("TestNet".equals(s_netType)) {
-            s_ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
-        } else {
-            s_ethscGetTokenListUrl = "https://eth.elastos.io";
-        }
 
         cc.success("");
     }
@@ -3529,21 +3521,5 @@ public class Wallet extends CordovaPlugin {
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create withdraw transaction");
         }
-    }
-
-    public void getERC20TokenList(JSONArray args, CallbackContext cc) throws JSONException {
-        String address = args.getString(0);
-
-        new Thread(() -> {
-            try {
-                WalletHttprequest walletHttp = new WalletHttprequest(s_ethscGetTokenListUrl);
-                String result = walletHttp.getTokenListByAddress(address);
-                JSONObject resultObj = new JSONObject(result);
-                JSONArray tokenList = resultObj.getJSONArray("result");
-                cc.success(tokenList);
-            } catch (Exception e) {
-                exceptionProcess(e, cc,  " getERC20TokenList");
-            }
-        }).start();
     }
 }

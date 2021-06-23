@@ -21,7 +21,6 @@
  */
 
 #import "Wallet.h"
-#import "WalletHttprequest.h"
 #import <Cordova/CDVCommandDelegate.h>
 
 #pragma mark - ElISubWalletCallback C++
@@ -1422,13 +1421,6 @@ using namespace Elastos::ElaWallet;
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
-    }
-
-    // TODO user set the s_ethscGetTokenListUrl?
-    if ([s_netType isEqual: @"TestNet"]) {
-        s_ethscGetTokenListUrl = "https://eth-testnet.elastos.io";
-    } else {
-        s_ethscGetTokenListUrl = "https://eth.elastos.io";
     }
 
     return [self successAsString:command msg:@""];
@@ -2994,30 +2986,6 @@ String const ETHSC = "ETHSC";
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
-}
-
-- (void)getERC20TokenList:(CDVInvokedUrlCommand *)command
-{
-    NSArray *args = command.arguments;
-    String address = [self cstringWithString:args[0]];
-
-    WalletHttprequest* walletHttprequest = new WalletHttprequest(s_ethscGetTokenListUrl);
-    if (walletHttprequest == nil) {
-        NSString *msg = @"getERC20TokenList: fail to new WalletHttprequest.";
-        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
-    }
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        try {
-            NSString *jsonString = walletHttprequest->GetTokenListByAddress(address);
-            NSDictionary *dic = [self dictionaryWithJsonString:jsonString];
-
-            NSArray * tokenList = [dic objectForKey:@"result"];
-            return [self successAsArray:command msg:tokenList];
-        } catch (const std:: exception &e) {
-            return [self exceptionProcess:command string:e.what()];
-        }
-    });
 }
 
 @end

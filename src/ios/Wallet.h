@@ -48,8 +48,6 @@ typedef Elastos::ElaWallet::IIDChainSubWallet IIDChainSubWallet;
 static int walletRefCount = 0;
 static MasterWalletManager *mMasterWalletManager = nil;
 static dispatch_semaphore_t walletSemaphore;
-// for ethsc http request
-String s_ethscGetTokenListUrl = "https://eth.elastos.io";
 
 NSString* s_dataRootPath = @"";
 NSString* s_netType = @"MainNet";

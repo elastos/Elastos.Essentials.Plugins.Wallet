@@ -12,7 +12,6 @@
 			</feature>
 		</config-file>
         <source-file src="src/android/Wallet.java" target-dir="src/org/elastos/essentials/plugins/wallet" />
-        <source-file src="src/android/WalletHttprequest.java" target-dir="src/org/elastos/essentials/plugins/wallet" />
         <framework src="src/android/wallet.gradle" custom="true" type="gradleReference"/>
         <!-- <resource-file src="src/android/libs/org.elastos.spvcore-debug.aar" target="libs/org.elastos.spvcore-debug.aar"/> -->
 	</platform>
@@ -24,8 +23,6 @@
         </config-file>
         <source-file src="src/ios/Wallet.mm" />
         <header-file src="src/ios/Wallet.h" />
-        <source-file src="src/ios/WalletHttprequest.mm" />
-        <header-file src="src/ios/WalletHttprequest.h" />
         <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IEthSidechainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
