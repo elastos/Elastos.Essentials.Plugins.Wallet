@@ -195,13 +195,5 @@ String s_logLevel = "warning";
 //ETHSidechain
 - (void)createTransfer:(CDVInvokedUrlCommand *)command;
 - (void)createTransferGeneric:(CDVInvokedUrlCommand *)command;
-- (void)deleteTransfer:(CDVInvokedUrlCommand *)command;
-- (void)getTokenTransactions:(CDVInvokedUrlCommand *)command;
-- (void)getERC20TokenList:(CDVInvokedUrlCommand *)command;
-- (void)getBalance:(CDVInvokedUrlCommand *)command;
-- (void)publishTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getAllTransaction:(CDVInvokedUrlCommand *)command;
-- (void)syncStart:(CDVInvokedUrlCommand *)command;
-- (void)syncStop:(CDVInvokedUrlCommand *)command;
 
 @end

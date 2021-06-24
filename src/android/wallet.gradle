@@ -29,5 +29,5 @@ repositories {
 
 dependencies {
     // implementation(name: 'org.elastos.spvcore-debug', ext: 'aar')
-    implementation 'org.elastos:spvcore:1.0'
+    implementation 'org.elastos:spvcore:1.1'
 }

@@ -576,11 +576,6 @@ public class Wallet extends CordovaPlugin {
                     this.createWithdrawTransaction(args, cc);
                     break;
 
-                // ERC20 Token list
-                case "getERC20TokenList":
-                    this.getERC20TokenList(args, cc);
-                    break;
-
                 default:
                     errorProcess(cc, errCodeActionNotFound, "Action '" + action + "' not found, please check!");
                     return false;
