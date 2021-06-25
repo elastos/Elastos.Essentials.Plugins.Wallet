@@ -76,11 +76,11 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     importWalletWithKeystore(args, success, error) {
-        exec(success, error, "Wallet", "importWalletWithKeystore", args);
+        _exec(success, error, "Wallet", "importWalletWithKeystore", args);
     };
 
     importWalletWithMnemonic(args, success, error) {
-        exec(success, error, "Wallet", "importWalletWithMnemonic", args);
+        _exec(success, error, "Wallet", "importWalletWithMnemonic", args);
     };
 
     getAllMasterWallets(args, success, error) {
