@@ -2247,6 +2247,7 @@ public class Wallet extends CordovaPlugin {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
         String amount = args.getString(idx++);
         String fee = args.getString(idx++);
         String memo = args.getString(idx++);
@@ -2270,7 +2271,7 @@ public class Wallet extends CordovaPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-            String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(amount, fee, memo);
+            String txJson = mainchainSubWallet.CreateRetrieveDepositTransaction(inputs, amount, fee, memo);
             cc.success(txJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create retrieve deposit transaction");
@@ -2622,6 +2623,7 @@ public class Wallet extends CordovaPlugin {
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         String inputs = args.getString(idx++);
+        String amount = args.getString(idx++);
         String fee = args.getString(idx++);
         String memo = args.getString(idx++);
 
@@ -2644,7 +2646,7 @@ public class Wallet extends CordovaPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-            String txJson = mainchainSubWallet.CreateRetrieveCRDepositTransaction(inputs, fee, memo);
+            String txJson = mainchainSubWallet.CreateRetrieveCRDepositTransaction(inputs, amount, fee, memo);
             cc.success(txJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create retrieve CR deposit transaction");
