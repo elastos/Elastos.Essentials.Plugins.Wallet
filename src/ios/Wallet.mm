@@ -1608,6 +1608,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
     String chainID        = [self cstringWithString:args[idx++]];
+    Json inputs           = [self jsonWithString:args[idx++]];
     String amount         = [self cstringWithString:args[idx++]];
     String fee            = [self cstringWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
@@ -1627,7 +1628,7 @@ using namespace Elastos::ElaWallet;
     }
 
     try {
-        Json txJson =  mainchainSubWallet->CreateRetrieveDepositTransaction(amount, fee, memo);
+        Json txJson =  mainchainSubWallet->CreateRetrieveDepositTransaction(inputs, amount, fee, memo);
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
@@ -1923,7 +1924,8 @@ using namespace Elastos::ElaWallet;
     String masterWalletID = [self cstringWithString:args[idx++]];
     String chainID        = [self cstringWithString:args[idx++]];
     Json inputs           = [self jsonWithString:args[idx++]];
-    String fee         = [self cstringWithString:args[idx++]];
+    String amount         = [self cstringWithString:args[idx++]];
+    String fee            = [self cstringWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
 
     if (args.count != idx) {
@@ -1941,7 +1943,7 @@ using namespace Elastos::ElaWallet;
     }
 
     try {
-        Json txJson =  mainchainSubWallet->CreateRetrieveCRDepositTransaction(inputs, fee, memo);
+        Json txJson =  mainchainSubWallet->CreateRetrieveCRDepositTransaction(inputs, amount, fee, memo);
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
