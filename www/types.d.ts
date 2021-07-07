@@ -545,6 +545,7 @@ declare module WalletPlugin {
         /**
          *
          * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param targetAddress
          * @param amount
          * @param amountUnit
@@ -555,6 +556,7 @@ declare module WalletPlugin {
         /**
          *
          * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param targetAddress
          * @param amount
          * @param amountUnit

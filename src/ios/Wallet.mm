@@ -66,6 +66,13 @@ using namespace Elastos::ElaWallet;
     return nil;
 }
 
+- (IEthSidechainSubWallet*) getEthSidechainSubWallet:(String)masterWalletID :(String)chainID
+{
+    ISubWallet* subWallet = [self getSubWallet:masterWalletID :chainID];
+
+    return dynamic_cast<IEthSidechainSubWallet *>(subWallet);
+}
+
 #pragma mark -
 
 - (NSString *)getBasicInfo:(IMasterWallet *)masterWallet
@@ -2920,31 +2927,24 @@ String const IDChain = "IDChain";
     }
 }
 
-String const ETHSC = "ETHSC";
-
-- (IEthSidechainSubWallet*) getEthSidechainSubWallet:(String)masterWalletID {
-     ISubWallet* subWallet = [self getSubWallet:masterWalletID :ETHSC];
-
-    return dynamic_cast<IEthSidechainSubWallet *>(subWallet);
- }
-
 - (void)createTransfer:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
     int idx = 0;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
     String targetAddress  = [self cstringWithString:args[idx++]];
     String amount         = [self cstringWithString:args[idx++]];
     int amountUnit        = [args[idx++] intValue];
-    long   nonce         = [args[idx++] longValue];
+    long   nonce          = [args[idx++] longValue];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID];
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID :chainID];
     if (ethscSubWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:ETHSC]];
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
         return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
     }
 
@@ -2963,6 +2963,7 @@ String const ETHSC = "ETHSC";
     int idx = 0;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
     String targetAddress  = [self cstringWithString:args[idx++]];
     String amount         = [self cstringWithString:args[idx++]];
     int amountUnit        = [args[idx++] intValue];
@@ -2975,9 +2976,9 @@ String const ETHSC = "ETHSC";
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
     }
-    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID];
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID :chainID];
     if (ethscSubWallet == nil) {
-        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:ETHSC]];
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
         return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
     }
 

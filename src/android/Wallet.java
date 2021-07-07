@@ -66,6 +66,7 @@ public class Wallet extends CordovaPlugin {
 
     public static final String IDChain = "IDChain";
     public static final String ETHSC = "ETHSC";
+    public static final String ETHEID = "ETHEID";
 
     private static String s_dataRootPath = "";
     private static String s_netType = "MainNet";
@@ -258,6 +259,15 @@ public class Wallet extends CordovaPlugin {
         }
 
         Log.e(TAG, formatWalletName(masterWalletID, chainID) + " not found");
+        return null;
+    }
+
+    private EthSidechainSubWallet getEthSidechainSubWallet(String masterWalletID, String chainID) {
+        SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+
+        if ((subWallet instanceof EthSidechainSubWallet)) {
+            return (EthSidechainSubWallet) subWallet;
+        }
         return null;
     }
 
@@ -1858,23 +1868,16 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
-    private EthSidechainSubWallet getEthSidechainSubWallet(String masterWalletID) {
-        SubWallet subWallet = getSubWallet(masterWalletID, ETHSC);
-
-        if ((subWallet instanceof EthSidechainSubWallet)) {
-            return (EthSidechainSubWallet) subWallet;
-        }
-        return null;
-    }
-
     // args[0]: String masterWalletID
-    // args[1]: String targetAddress
-    // args[2]: String amount
-    // args[3]: int amountUnit
-    // args[3]: long nonce
+    // args[1]: String chainID
+    // args[2]: String targetAddress
+    // args[3]: String amount
+    // args[4]: int amountUnit
+    // args[5]: long nonce
     public void createTransfer(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
         String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
         int amountUnit = args.getInt(idx++);
@@ -1886,14 +1889,14 @@ public class Wallet extends CordovaPlugin {
         }
 
         try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID, chainID);
             if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
             cc.success(ethscSubWallet.CreateTransfer(targetAddress, amount, amountUnit, nonce));
         } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " create transfer");
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create transfer");
         }
     }
 
@@ -1909,6 +1912,7 @@ public class Wallet extends CordovaPlugin {
     public void createTransferGeneric(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
         String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
         int amountUnit = args.getInt(idx++);
@@ -1924,14 +1928,14 @@ public class Wallet extends CordovaPlugin {
         }
 
         try {
-            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID);
+            EthSidechainSubWallet ethscSubWallet = getEthSidechainSubWallet(masterWalletID, chainID);
             if (ethscSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, ETHSC));
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
             cc.success(ethscSubWallet.CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data, nonce));
         } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, ETHSC) + " create transfer generic");
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create transfer generic");
         }
     }
 

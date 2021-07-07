@@ -178,11 +178,11 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     getLastAddresses(args, success, error) {
-      _exec(success, error, "Wallet", "getLastAddresses", args);
+        _exec(success, error, "Wallet", "getLastAddresses", args);
     };
 
     updateUsedAddress(args, success, error) {
-      _exec(success, error, "Wallet", "updateUsedAddress", args);
+        exec(success, error, "Wallet", "updateUsedAddress", args);
     };
 
     getAllPublicKeys(args, success, error) {
