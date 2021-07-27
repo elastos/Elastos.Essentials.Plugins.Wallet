@@ -1965,7 +1965,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID = [self cstringWithString:args[idx++]];
     String chainID        = [self cstringWithString:args[idx++]];
-    String payload        = [self cstringWithString:args[idx++]];
+    Json payload          = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -1998,7 +1998,7 @@ using namespace Elastos::ElaWallet;
     String masterWalletID = [self cstringWithString:args[idx++]];
     String chainID        = [self cstringWithString:args[idx++]];
     Json inputs           = [self jsonWithString:args[idx++]];
-    String payload        = [self cstringWithString:args[idx++]];
+    Json payload          = [self jsonWithString:args[idx++]];
     String fee            = [self cstringWithString:args[idx++]];
     String memo           = [self cstringWithString:args[idx++]];
 
@@ -2067,7 +2067,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID   = [self cstringWithString:args[idx++]];
     String chainID          = [self cstringWithString:args[idx++]];
-    String payload          = [self cstringWithString:args[idx++]];
+    Json payload          = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -2099,7 +2099,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID       = [self cstringWithString:args[idx++]];
     String chainID              = [self cstringWithString:args[idx++]];
-    String payload              = [self cstringWithString:args[idx++]];
+    Json payload                = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -2131,7 +2131,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID       = [self cstringWithString:args[idx++]];
     String chainID              = [self cstringWithString:args[idx++]];
-    String payload              = [self cstringWithString:args[idx++]];
+    Json payload                = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -2198,7 +2198,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID   = [self cstringWithString:args[idx++]];
     String chainID          = [self cstringWithString:args[idx++]];
-    String payload          = [self cstringWithString:args[idx++]];
+    Json payload            = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
