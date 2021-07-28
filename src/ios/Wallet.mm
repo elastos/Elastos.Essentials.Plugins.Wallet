@@ -2033,7 +2033,7 @@ using namespace Elastos::ElaWallet;
     String masterWalletID  = [self cstringWithString:args[idx++]];
     String chainID         = [self cstringWithString:args[idx++]];
     Json inputs            = [self jsonWithString:args[idx++]];
-    Json voteContents      = [self jsonWithDict:args[idx++]];
+    Json voteContents      = [self jsonWithString:args[idx++]];
     String fee             = [self cstringWithString:args[idx++]];
     String memo            = [self cstringWithString:args[idx++]];
 
