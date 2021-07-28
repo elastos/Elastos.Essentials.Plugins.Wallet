@@ -252,7 +252,6 @@ public class Wallet extends CordovaPlugin {
 
         ArrayList<SubWallet> subWalletList = masterWallet.GetAllSubWallets();
         for (int i = 0; i < subWalletList.size(); i++) {
-            Log.d(TAG, " chain id:" + subWalletList.get(i).GetChainID());
             if (chainID.equals(subWalletList.get(i).GetChainID())) {
                 return subWalletList.get(i);
             }
@@ -635,6 +634,7 @@ public class Wallet extends CordovaPlugin {
         }
 
         try {
+            Log.d(TAG, " s_netType:" + s_netType + " s_netConfig:" + s_netConfig);
             mMasterWalletManager = new MasterWalletManager(rootPath, s_netType, s_netConfig, s_dataRootPath);
             mMasterWalletManager.SetLogLevel(s_logLevel);
 
