@@ -1494,7 +1494,7 @@ using namespace Elastos::ElaWallet;
     }
 
     try {
-        String payloadJson = mainchainSubWallet->GenerateCancelProducerPayload(publicKey, payPasswd);
+        Json payloadJson = mainchainSubWallet->GenerateCancelProducerPayload(publicKey, payPasswd);
         NSString *jsonString = [self stringWithJson:payloadJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
@@ -2067,7 +2067,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID   = [self cstringWithString:args[idx++]];
     String chainID          = [self cstringWithString:args[idx++]];
-    Json payload          = [self jsonWithString:args[idx++]];
+    Json payload            = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -2099,7 +2099,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID       = [self cstringWithString:args[idx++]];
     String chainID              = [self cstringWithString:args[idx++]];
-    Json payload                = [self jsonWithString:args[idx++]];
+    Json   payload              = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -2131,7 +2131,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID       = [self cstringWithString:args[idx++]];
     String chainID              = [self cstringWithString:args[idx++]];
-    Json payload                = [self jsonWithString:args[idx++]];
+    Json   payload              = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
@@ -2198,7 +2198,7 @@ using namespace Elastos::ElaWallet;
 
     String masterWalletID   = [self cstringWithString:args[idx++]];
     String chainID          = [self cstringWithString:args[idx++]];
-    Json payload            = [self jsonWithString:args[idx++]];
+    Json   payload          = [self jsonWithString:args[idx++]];
 
     if (args.count != idx) {
         return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
