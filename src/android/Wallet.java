@@ -65,13 +65,11 @@ public class Wallet extends CordovaPlugin {
     private String keyException = "exception";
 
     public static final String IDChain = "IDChain";
-    public static final String ETHSC = "ETHSC";
-    public static final String ETHEID = "ETHEID";
 
     private static String s_dataRootPath = "";
     private static String s_netType = "MainNet";
     private static String s_netConfig = "";
-    private static String s_logLevel = "debug";
+    private static String s_logLevel = "warning";
 
     private int errCodeParseJsonInAction = 10000;
     private int errCodeInvalidArg = 10001;
