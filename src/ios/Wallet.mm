@@ -2937,6 +2937,9 @@ String const IDChain = "IDChain";
     String targetAddress  = [self cstringWithString:args[idx++]];
     String amount         = [self cstringWithString:args[idx++]];
     int amountUnit        = [args[idx++] intValue];
+    String gasPrice       = [self cstringWithString:args[idx++]];
+    int gasPriceUnit      = [args[idx++] intValue];
+    String gasLimit       = [self cstringWithString:args[idx++]];
     long   nonce          = [args[idx++] longValue];
 
     if (args.count != idx) {
@@ -2949,7 +2952,7 @@ String const IDChain = "IDChain";
     }
 
     try {
-        Json json = ethscSubWallet->CreateTransfer(targetAddress, amount, amountUnit, nonce);
+        Json json = ethscSubWallet->CreateTransfer(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, nonce);
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {

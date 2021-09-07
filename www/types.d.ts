@@ -270,6 +270,14 @@ declare module WalletPlugin {
         exportWalletWithMnemonic(args, success, error);
 
         /**
+         * Export private of the current wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param payPassword use to decrypt and generate private temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+         * @return If success will return the private of master wallet.
+         */
+         exportWalletWithPrivateKey(args, success, error);
+
+        /**
          * Verify passphrase and pay password whether same as current wallet.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param passphrase password for  mnemonic. Passphrase should between 8 and 128.
@@ -549,6 +557,10 @@ declare module WalletPlugin {
          * @param targetAddress
          * @param amount
          * @param amountUnit
+         * @param gasPrice
+         * @param gasPriceUnit
+         * @param gasLimit
+         * @param nonce
          * @return
          */
         createTransfer(args, success, error);
@@ -564,9 +576,18 @@ declare module WalletPlugin {
          * @param gasPriceUnit
          * @param gasLimit
          * @param data
+         * @param nonce
          * @return
          */
         createTransferGeneric(args, success, error);
+
+        /**
+         * Export private of the current wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param payPassword use to decrypt and generate private temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+         * @return If success will return the private of master wallet.
+         */
+         exportETHSCPrivateKey(args, success, error);
 
         //MainchainSubWallet
 

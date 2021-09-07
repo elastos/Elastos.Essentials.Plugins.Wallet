@@ -334,9 +334,9 @@ public class Wallet extends CordovaPlugin {
                 case "exportWalletWithMnemonic":
                     this.exportWalletWithMnemonic(args, cc);
                     break;
-                // case "exportWalletWithPrivateKey":
-                //     this.exportWalletWithPrivateKey(args, cc);
-                //     break;
+                case "exportWalletWithPrivateKey":
+                    this.exportWalletWithPrivateKey(args, cc);
+                    break;
 
                 // Master wallet
                 case "getMasterWalletBasicInfo":
@@ -441,9 +441,9 @@ public class Wallet extends CordovaPlugin {
                 case "createTransferGeneric":
                     this.createTransferGeneric(args, cc);
                     break;
-                // case "exportETHSCPrivateKey":
-                //     this.exportETHSCPrivateKey(args, cc);
-                //     break;
+                case "exportETHSCPrivateKey":
+                    this.exportETHSCPrivateKey(args, cc);
+                    break;
 
                 // Main chain subwallet
                 case "createDepositTransaction":
@@ -1126,7 +1126,7 @@ public class Wallet extends CordovaPlugin {
             exceptionProcess(e, cc, "Export " + masterWalletID + " to mnemonic");
         }
     }
-/*
+
     // args[0]: String masterWalletID
     // args[1]: String payPassword
     public void exportWalletWithPrivateKey(JSONArray args, CallbackContext cc) throws JSONException {
@@ -1153,7 +1153,7 @@ public class Wallet extends CordovaPlugin {
             exceptionProcess(e, cc, "Export " + masterWalletID + " to private");
         }
     }
-*/
+
     // args[0]: String masterWalletID
     // args[1]: String passPhrase
     // args[2]: String payPassword
@@ -1904,7 +1904,10 @@ public class Wallet extends CordovaPlugin {
     // args[2]: String targetAddress
     // args[3]: String amount
     // args[4]: int amountUnit
-    // args[5]: long nonce
+    // args[5]: String gasPrice
+    // args[6]: int gasPriceUnit
+    // args[7]: String gasLimit
+    // args[8]: long nonce
     public void createTransfer(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
@@ -1912,6 +1915,9 @@ public class Wallet extends CordovaPlugin {
         String targetAddress = args.getString(idx++);
         String amount = args.getString(idx++);
         int amountUnit = args.getInt(idx++);
+        String gasPrice = args.getString(idx++);
+        int gasPriceUnit = args.getInt(idx++);
+        String gasLimit = args.getString(idx++);
         long nonce = args.getLong(idx++);
 
         if (args.length() != idx) {
@@ -1925,7 +1931,7 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
-            cc.success(ethscSubWallet.CreateTransfer(targetAddress, amount, amountUnit, nonce));
+            cc.success(ethscSubWallet.CreateTransfer(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, nonce));
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create transfer");
         }
@@ -1969,7 +1975,7 @@ public class Wallet extends CordovaPlugin {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create transfer generic");
         }
     }
-/*
+
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[1]: String payPassword
@@ -1998,7 +2004,7 @@ public class Wallet extends CordovaPlugin {
             exceptionProcess(e, cc, "Export " + masterWalletID + " to private");
         }
     }
-*/
+
     // MainchainSubWallet
 
     // args[0]: String masterWalletID

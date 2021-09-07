@@ -125,6 +125,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "exportWalletWithMnemonic", args);
     };
 
+    exportWalletWithPrivateKey(args, success, error) {
+        exec(success, error, "Wallet", "exportWalletWithPrivateKey", args);
+    };
+
     verifyPassPhrase(args, success, error) {
         exec(success, error, "Wallet", "verifyPassPhrase", args);
     };
@@ -253,6 +257,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     createTransferGeneric(args, success, error) {
         exec(success, error, "Wallet", "createTransferGeneric", args);
+    };
+
+    exportETHSCPrivateKey(args, success, error) {
+        exec(success, error, "Wallet", "exportETHSCPrivateKey", args);
     };
 
     //MainchainSubWallet
