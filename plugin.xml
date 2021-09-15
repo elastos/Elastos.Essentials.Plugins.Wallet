@@ -36,7 +36,6 @@
         <source-file src="src/ios/libspvsdk/lib/libboost_system.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libboost_thread.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libcrypto.a" framework="true" />
-        <source-file src="src/ios/libspvsdk/lib/libfruit.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libspdlog.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libspvsdk.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libsqlite3.a" framework="true" />
