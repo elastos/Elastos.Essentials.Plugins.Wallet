@@ -96,6 +96,7 @@ String s_logLevel = "warning";
 - (void)createAddress:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
+- (void)exportWalletWithPrivateKey:(CDVInvokedUrlCommand *)command;
 - (void)verifyPassPhrase:(CDVInvokedUrlCommand *)command;
 - (void)verifyPayPassword:(CDVInvokedUrlCommand *)command;
 - (void)changePassword:(CDVInvokedUrlCommand *)command;
@@ -195,5 +196,6 @@ String s_logLevel = "warning";
 //ETHSidechain
 - (void)createTransfer:(CDVInvokedUrlCommand *)command;
 - (void)createTransferGeneric:(CDVInvokedUrlCommand *)command;
+- (void)exportETHSCPrivateKey:(CDVInvokedUrlCommand *)command;
 
 @end

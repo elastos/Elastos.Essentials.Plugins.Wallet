@@ -655,6 +655,32 @@ using namespace Elastos::ElaWallet;
     }
 }
 
+- (void)exportWalletWithPrivateKey:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String payPassword    = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+    if (masterWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
+        return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+    }
+
+    try {
+        Json json = masterWallet->ExportPrivateKey(payPassword);
+        NSString *jsonString = [self stringWithCString:json.dump()];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
 - (void)verifyPassPhrase:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
@@ -2989,6 +3015,34 @@ String const IDChain = "IDChain";
         Json json = ethscSubWallet->CreateTransferGeneric(targetAddress, amount, amountUnit, gasPrice, gasPriceUnit, gasLimit, data, nonce);
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)exportETHSCPrivateKey:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String chainID        = [self cstringWithString:args[idx++]];
+    String password       = [self cstringWithString:args[idx++]];
+
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IEthSidechainSubWallet* ethscSubWallet = [self getEthSidechainSubWallet:masterWalletID :chainID];
+    if (ethscSubWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletNameWithString:masterWalletID other:chainID]];
+        return [self errorProcess:command code:errCodeInvalidSubWallet msg:msg];
+    }
+
+    try {
+        String ret = ethscSubWallet->ExportPrivateKey(password);
+        NSString *jsonString = [self stringWithJson:ret];
+        return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
