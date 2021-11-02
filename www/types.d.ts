@@ -350,53 +350,34 @@ declare module WalletPlugin {
 
 
         //SubWallet
-
         /**
-         * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @return a new address or existing unused address.
-         */
-        createAddress(args, success, error);
-
-        /**
-         * Get all created addresses in json format. The parameters of start and count are used for purpose of paging.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param start specify start index of all addresses list.
-         * @param count specify count of addresses we need.
-         * @return addresses in JSON format.
+         * For Elastos-based or btc wallet: Derivate @count addresses from @index.  Note that if create the
+         * sub-wallet by setting the singleAddress to true, will always set @index to 0, set @count to 1,
+         * set @internal to false.
+         * For ETH-based sidechain: Only return a single address. Ignore all parameters.
          *
-         * example:
-         * {
-         *     "Addresses": ["EYMVuGs1FscpgmghSzg243R6PzPiszrgj7", "EJuHg2CdT9a9bqdKUAtbrAn6DGwXtKA6uh"],
-         *     "MaxCount": 100
-         * }
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @index start from 0.
+         * @count count of addresses we need.
+         * @internal change address for true or normal receive address for false.
+         * @return a new address or addresses as required.
          */
-        getAllAddress(args, success, error);
+        getAddresses(args, success, error);
 
         /**
-         * Get last 10 external addresses or 5 internal addresses
-         * @internal indicate if addresses are change(internal) address or not
-         * @return
-         */
-        getLastAddresses(args, success, error);
-
-        /**
-         * @param usedAddresses
-         * @return none
-         */
-			  updateUsedAddress(args, success, error);
-
-        /**
-         * Get all created public key list in JSON format. The parameters of start and count are used for the purpose of paging.
+         * For Elastos-based or btc wallet: Get @count public keys from @index.  Note that if create the
+         * sub-wallet by setting the singleAddress to true, will always set @index to 0, set @count to 1,
+         * set @internal to false.
+         * For ETH-based sidechain: Only return a single public key. Ignore all parameters.
+         *
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
          * @param start to specify start index of all public key list.
          * @param count specifies the count of public keys we need.
          * @return public keys in json format.
          */
-        getAllPublicKeys(args, success, error);
+        getPublicKeys(args, success, error);
 
         /**
          * Create a normal transaction and return the content of transaction in json format.
@@ -419,6 +400,29 @@ declare module WalletPlugin {
          * @return If success return the content of transaction in json format.
          */
         signTransaction(args, success, error);
+
+
+        /**
+         * Sign message with private key of address.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param address will sign the digest with private key of this address.
+         * @param digest hex string of sha256
+         * @param payPassword pay password.
+         * @return If success, signature will be returned.
+         */
+         signDigest(args, success, error);
+
+        /**
+         * Verify signature with specify public key.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @param pubkey public key hex string.
+         * @param digest hex string of sha256.
+         * @param payPassword pay password.
+         * @return If success, signature will be returned.
+         */
+         verifyDigest(args, success, error);
 
         /**
          * Get signers already signed specified transaction.
@@ -473,34 +477,34 @@ declare module WalletPlugin {
         /**
          * Get all DID derived of current subwallet.
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param start specify start index of all DID list.
+         * @param index specify start index of all DID list.
          * @param count specify count of DID we need.
+         * @param internal change address for true or normal external address for false.
          * @return If success return all DID in JSON format.
          *
          * example:
-         * GetAllDID(0, 3) will return below
+         * GetDID(0, 3) will return below
          * {
          *     "DID": ["iZDgaZZjRPGCE4x8id6YYJ158RxfTjTnCt", "iPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"],
-         *     "MaxCount": 100
          * }
          */
-        getAllDID(args, success, error);
+        getDID(args, success, error);
 
         /**
          * Get all CID derived of current subwallet.
          * @param masterWalletID is the unique identification of a master wallet object.
-         * @param start specify start index of all CID list.
+         * @param index specify start index of all CID list.
          * @param count specify count of CID we need.
-         * @return If success return all CID in JSON format.
+         * @param internal change address for true or normal external address for false.
+         * @return If success return CID in JSON format.
          *
          * example:
-         * GetAllCID(0, 3) will return below
+         * GetCID(0, 3) will return below
          * {
          *     "CID": ["iZDgaZZjRPGCE4x8id6YYJ158RxfTjTnCt", "iPbdmxUVBzfNrVdqJzZEySyWGYeuKAeKqv", "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"],
-         *     "MaxCount": 100
          * }
          */
-        getAllCID(args, success, error);
+        getCID(args, success, error);
 
         /**
          * Sign message with private key of did.
@@ -511,16 +515,6 @@ declare module WalletPlugin {
          * @return If success, signature will be returned.
          */
         didSign(args, success, error);
-
-        /**
-         * Sign message with private key of did.
-         * @param masterWalletID is the unique identification of a master wallet object.
-         * @param did will sign the message with public key of this did.
-         * @param digest hex string of sha256
-         * @param payPassword pay password.
-         * @return If success, signature will be returned.
-         */
-        didSignDigest(args, success, error);
 
         /**
          * Verify signature with specify public key
@@ -595,14 +589,26 @@ declare module WalletPlugin {
          * Deposit token from the main chain to side chains, such as ID chain or token chain, etc.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-         * @param fromAddress      If this address is empty, wallet will pick available UTXO automatically.
-         *                         Otherwise, wallet will pick UTXO from the specific address.
-         * @param sideChainID      Chain id of the side chain.
-         * @param amount           The amount that will be deposit to the side chain.
-         * @param sideChainAddress Receive address of side chain.
-         * @memo                   Remarks string. Can be empty string.
-         * @return                 The transaction in JSON format to be signed and published.
-         */
+         * @version 0x00 means old deposit tx, 0x01 means new deposit tx, other value will throw exception.
+		 * @param inputs UTXO which will be used. eg
+		 * [
+		 *   {
+		 *     "TxHash": "...", // string
+		 *     "Index": 123, // int
+		 *     "Address": "...", // string
+		 *     "Amount": "100000000" // bigint string in SELA
+		 *   },
+		 *   ...
+		 * ]
+		 * NOTE:  (utxo input amount) >= amount + 10000 sela + fee
+		 * @param sideChainID Chain id of the side chain
+		 * @param amount The amount that will be deposit to the side chain.
+		 * @param sideChainAddress Receive address of side chain
+		 * @param lockAddress Generate from genesis block hash
+		 * @param fee Fee amount. Bigint string in SELA
+		 * @param memo Remarks string. Can be empty string
+		 * @return The transaction in JSON format to be signed and published
+		 */
         createDepositTransaction(args, success, error);
 
         //////////////////////////////////////////////////
@@ -1255,5 +1261,48 @@ declare module WalletPlugin {
          * @return Transaction in JSON format.
          */
         createProposalWithdrawTransaction(args, success, error);
+
+        // BTCSubwallet
+
+        /**
+         * get legay addresses of btc
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @index start from where.
+         * @count how many address we need.
+         * @internal change address for true or normal receive address for false.
+         * @return as required
+         */
+        getLegacyAddresses(args, success, error);
+
+        /**
+         * create btc transaction
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @inputs in json array format. eg:
+         * [
+         * {
+         *   "TxHash": "...", // uint256 string
+         *   "Index": 0, // uint16_t
+         *   "Address": "...", // btc address
+         *   "Amount": "100000000" // bigint string in satoshi
+         * },
+         * {
+         *   ...
+         * }
+         * ]
+         * @outputs in json array format. eg:
+         * [
+         * {
+         *   "Address": "...", // btc address
+         *   "Amount": "100000000" // bigint string in satoshi
+         * },
+         * {
+         *   ...
+         * }
+         * ]
+         * @changeAddress change address in string format.
+         * @feePerKB how much fee (satoshi) per kb of tx size.
+         * @return unsigned serialized transaction in json format.
+         */
+        createBTCTransaction(args, success, error);
     }
 }

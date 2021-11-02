@@ -27,6 +27,8 @@ import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaWebView;
 
+import org.elastos.spvcore.BTCSubWallet;
+import org.elastos.spvcore.ElastosBaseSubWallet;
 import org.elastos.spvcore.EthSidechainSubWallet;
 import org.elastos.spvcore.MasterWallet;
 import org.elastos.spvcore.SubWallet;
@@ -268,6 +270,15 @@ public class Wallet extends CordovaPlugin {
         return null;
     }
 
+    private BTCSubWallet getBTCSubWallet(String masterWalletID) {
+        SubWallet subWallet = getSubWallet(masterWalletID, "BTC");
+
+        if ((subWallet instanceof BTCSubWallet)) {
+            return (BTCSubWallet) subWallet;
+        }
+        return null;
+    }
+
     private String[] JSONArray2Array(JSONArray jsonArray) throws JSONException {
         String[] strArray = new String[jsonArray.length()];
         for (int i=0; i<jsonArray.length(); i++) {
@@ -380,26 +391,23 @@ public class Wallet extends CordovaPlugin {
                     break;
 
                 // SubWallet
-                case "createAddress":
-                    this.createAddress(args, cc);
+                case "getAddresses":
+                    this.getAddresses(args, cc);
                     break;
-                case "getAllAddress":
-                    this.getAllAddress(args, cc);
-                    break;
-                case "getLastAddresses":
-                    this.getLastAddresses(args, cc);
-                    break;
-                case "updateUsedAddress":
-                    this.updateUsedAddress(args, cc);
-                    break;
-                case "getAllPublicKeys":
-                    this.getAllPublicKeys(args, cc);
+                case "getPublicKeys":
+                    this.getPublicKeys(args, cc);
                     break;
                 case "createTransaction":
                     this.createTransaction(args, cc);
                     break;
                 case "signTransaction":
                     this.signTransaction(args, cc);
+                    break;
+                case "signDigest":
+                    this.signDigest(args, cc);
+                    break;
+                case "verifyDigest":
+                    this.verifyDigest(args, cc);
                     break;
                 case "getTransactionSignedInfo":
                     this.getTransactionSignedInfo(args, cc);
@@ -412,17 +420,14 @@ public class Wallet extends CordovaPlugin {
                 case "createIdTransaction":
                     this.createIdTransaction(args, cc);
                     break;
-                case "getAllDID":
-                    this.getAllDID(args, cc);
+                case "getDID":
+                    this.getDID(args, cc);
                     break;
-                case "getAllCID":
-                    this.getAllCID(args, cc);
+                case "getCID":
+                    this.getCID(args, cc);
                     break;
                 case "didSign":
                     this.didSign(args, cc);
-                    break;
-                case "didSignDigest":
-                    this.didSignDigest(args, cc);
                     break;
                 case "verifySignature":
                     this.verifySignature(args, cc);
@@ -589,6 +594,12 @@ public class Wallet extends CordovaPlugin {
                     this.createWithdrawTransaction(args, cc);
                     break;
 
+                case "getLegacyAddresses":
+                    this.getLegacyAddresses(args, cc);
+                    break;
+                case "createBTCTransaction":
+                    this.createBTCTransaction(args, cc);
+                    break;
                 default:
                     errorProcess(cc, errCodeActionNotFound, "Action '" + action + "' not found, please check!");
                     return false;
@@ -1415,37 +1426,10 @@ public class Wallet extends CordovaPlugin {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    public void createAddress(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-        String chainID = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-            if (subWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-                return;
-            }
-
-            String address = subWallet.CreateAddress();
-
-            cc.success(address);
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, "Create " + formatWalletName(masterWalletID, chainID) + " address");
-        }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
     // args[2]: int start
     // args[3]: int count
     // args[4]: bool internal
-    public void getAllAddress(JSONArray args, CallbackContext cc) throws JSONException {
+    public void getAddresses(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
@@ -1464,7 +1448,7 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
-            String allAddresses = subWallet.GetAllAddress(start, count, internal);
+            String allAddresses = subWallet.GetAddresses(start, count, internal);
             cc.success(allAddresses);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " all addresses");
@@ -1473,74 +1457,16 @@ public class Wallet extends CordovaPlugin {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: bool internal
-    public void getLastAddresses(JSONArray args, CallbackContext cc) throws JSONException {
-      int idx = 0;
-      String masterWalletID = args.getString(idx++);
-      String chainID = args.getString(idx++);
-      boolean internal = args.getBoolean(idx++);
-
-      if (args.length() != idx) {
-          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-          return;
-      }
-
-      try {
-          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-          if (subWallet == null) {
-              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-              return;
-          }
-          String[] lastAddresses = subWallet.GetLastAddresses(internal);
-
-          JSONArray lastAddressesJson = new JSONArray();
-          for (int i = 0; i < lastAddresses.length; i++) {
-            lastAddressesJson.put(lastAddresses[i]);
-          }
-          cc.success(lastAddressesJson);
-      } catch (WalletException e) {
-          exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " last addresses");
-      }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
-    // args[2]: String[] usedAddresses
-    public void updateUsedAddress(JSONArray args, CallbackContext cc) throws JSONException {
-      int idx = 0;
-      String masterWalletID = args.getString(idx++);
-      String chainID = args.getString(idx++);
-      JSONArray addressArray = args.getJSONArray(idx++);
-      String[] usedAddresses = JSONArray2Array(addressArray);
-
-      if (args.length() != idx) {
-          errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-          return;
-      }
-
-      try {
-          SubWallet subWallet = getSubWallet(masterWalletID, chainID);
-          if (subWallet == null) {
-              errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
-              return;
-          }
-          subWallet.UpdateUsedAddress(usedAddresses);
-          cc.success("");
-      } catch (WalletException e) {
-          exceptionProcess(e, cc, "Update " + formatWalletName(masterWalletID, chainID) + " used addresses");
-      }
-    }
-
-    // args[0]: String masterWalletID
-    // args[1]: String chainID
     // args[2]: int start
     // args[3]: int count
-    public void getAllPublicKeys(JSONArray args, CallbackContext cc) throws JSONException {
+    // args[4]: bool internal
+    public void getPublicKeys(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
+        boolean internal = args.getBoolean(idx++);
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1553,7 +1479,7 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
             }
-            String allAddresses = subWallet.GetAllPublicKeys(start, count);
+            String allAddresses = subWallet.GetPublicKeys(start, count, internal);
             cc.success(allAddresses);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, chainID) + " all publickeys");
@@ -1563,7 +1489,7 @@ public class Wallet extends CordovaPlugin {
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String inputs
-    // args[3]: String targetAddress
+    // args[3]: String outputs
     // args[4]: String fee
     // args[5]: String memo
     public void createTransaction(JSONArray args, CallbackContext cc) throws JSONException {
@@ -1581,7 +1507,7 @@ public class Wallet extends CordovaPlugin {
         }
 
         try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            ElastosBaseSubWallet subWallet = (ElastosBaseSubWallet) getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
@@ -1626,6 +1552,58 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
+    public void signDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String address = args.getString(idx++);
+        String digest = args.getString(idx++);
+        String payPassword = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+            String result = subWallet.SignDigest(address, digest, payPassword);
+            cc.success(result);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " signDigest");
+        }
+    }
+
+    public void verifyDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String publicKey = args.getString(idx++);
+        String digest = args.getString(idx++);
+        String signature = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+            String result = subWallet.SignDigest(publicKey, digest, signature);
+            cc.success(result);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " verifyDigest");
+        }
+    }
+
     // args[0]: String masterWalletID
     // args[1]: String chainID
     // args[2]: String txJson
@@ -1641,7 +1619,7 @@ public class Wallet extends CordovaPlugin {
         }
 
         try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            ElastosBaseSubWallet subWallet = (ElastosBaseSubWallet) getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
@@ -1669,7 +1647,7 @@ public class Wallet extends CordovaPlugin {
         }
 
         try {
-            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            ElastosBaseSubWallet subWallet = (ElastosBaseSubWallet) getSubWallet(masterWalletID, chainID);
             if (subWallet == null) {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
                 return;
@@ -1728,11 +1706,12 @@ public class Wallet extends CordovaPlugin {
 
     }
 
-    public void getAllDID(JSONArray args, CallbackContext cc) throws JSONException {
+    public void getDID(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
+        boolean internal = args.getBoolean(idx++);
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1745,7 +1724,7 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
                 return;
             }
-            String did = idChainSubWallet.GetAllDID(start, count);
+            String did = idChainSubWallet.GetDID(start, count, internal);
 
             cc.success(did);
         } catch (WalletException e) {
@@ -1753,11 +1732,12 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
-    public void getAllCID(JSONArray args, CallbackContext cc) throws JSONException {
+    public void getCID(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         int start = args.getInt(idx++);
         int count = args.getInt(idx++);
+        boolean internal = args.getBoolean(idx++);
 
         if (args.length() != idx) {
             errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
@@ -1770,7 +1750,7 @@ public class Wallet extends CordovaPlugin {
                 errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
                 return;
             }
-            String did = idChainSubWallet.GetAllCID(start, count);
+            String did = idChainSubWallet.GetCID(start, count, internal);
 
             cc.success(did);
         } catch (WalletException e) {
@@ -1800,31 +1780,6 @@ public class Wallet extends CordovaPlugin {
             cc.success(result);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " didSign");
-        }
-    }
-
-    public void didSignDigest(JSONArray args, CallbackContext cc) throws JSONException {
-        int idx = 0;
-        String masterWalletID = args.getString(idx++);
-        String did = args.getString(idx++);
-        String digest = args.getString(idx++);
-        String payPassword = args.getString(idx++);
-
-        if (args.length() != idx) {
-            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
-            return;
-        }
-
-        try {
-            IDChainSubWallet idChainSubWallet = getIDChainSubWallet(masterWalletID);
-            if (idChainSubWallet == null) {
-                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, IDChain));
-                return;
-            }
-            String result = idChainSubWallet.SignDigest(did, digest, payPassword);
-            cc.success(result);
-        } catch (WalletException e) {
-            exceptionProcess(e, cc, formatWalletName(masterWalletID, IDChain) + " didSignDigest");
         }
     }
 
@@ -2009,17 +1964,19 @@ public class Wallet extends CordovaPlugin {
 
     // args[0]: String masterWalletID
     // args[1]: String chainID
-    // args[2]: String inputs
-    // args[3]: String sideChainID
-    // args[4]: String amount
-    // args[5]: String sideChainAddress
-    // args[6]: String lockAddress
-    // args[7]: String fee
-    // args[8]: String memo
+    // args[2]: int version
+    // args[3]: String inputs
+    // args[4]: String sideChainID
+    // args[5]: String amount
+    // args[6]: String sideChainAddress
+    // args[7]: String lockAddress
+    // args[8]: String fee
+    // args[9]: String memo
     public void createDepositTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
         String chainID = args.getString(idx++);
+        int version = args.getInt(idx++);
         String inputs = args.getString(idx++);
         String sideChainID = args.getString(idx++);
         String amount = args.getString(idx++);
@@ -2047,7 +2004,7 @@ public class Wallet extends CordovaPlugin {
             }
 
             MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
-            String txJson = mainchainSubWallet.CreateDepositTransaction(inputs, sideChainID, amount,
+            String txJson = mainchainSubWallet.CreateDepositTransaction(version, inputs, sideChainID, amount,
                     sideChainAddress, lockAddress, fee, memo);
 
             cc.success(txJson);
@@ -3587,6 +3544,70 @@ public class Wallet extends CordovaPlugin {
             cc.success(tx);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " create withdraw transaction");
+        }
+    }
+
+    // BTCSubWallet
+
+    // args[0]: String masterWalletID
+    // args[1]: int start
+    // args[2]: int count
+    // args[3]: bool internal
+    public void getLegacyAddresses(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        int start = args.getInt(idx++);
+        int count = args.getInt(idx++);
+        boolean internal = args.getBoolean(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            BTCSubWallet subWallet = getBTCSubWallet(masterWalletID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, "BTC"));
+                return;
+            }
+            String allAddresses = subWallet.GetLegacyAddresses(start, count, internal);
+            cc.success(allAddresses);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Get " + formatWalletName(masterWalletID, "BTC") + " legacy addresses");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[2]: String inputs
+    // args[3]: String outputs
+    // args[4]: String changeAddress
+    // args[5]: String feePerKB
+    public void createBTCTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
+        String outputs = args.getString(idx++);
+        String changeAddress = args.getString(idx++);
+        String feePerKB = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            BTCSubWallet subWallet = (BTCSubWallet) getBTCSubWallet(masterWalletID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, "BTC"));
+                return;
+            }
+
+            String tx = subWallet.CreateTransaction(inputs, outputs, changeAddress, feePerKB);
+            cc.success(tx);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Create " + formatWalletName(masterWalletID, "BTC") + " transaction");
         }
     }
 }

@@ -173,24 +173,12 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     //SubWallet
 
-    createAddress(args, success, error) {
-        exec(success, error, "Wallet", "createAddress", args);
+    getAddresses(args, success, error) {
+        _exec(success, error, "Wallet", "getAddresses", args);
     };
 
-    getAllAddress(args, success, error) {
-        _exec(success, error, "Wallet", "getAllAddress", args);
-    };
-
-    getLastAddresses(args, success, error) {
-        _exec(success, error, "Wallet", "getLastAddresses", args);
-    };
-
-    updateUsedAddress(args, success, error) {
-        exec(success, error, "Wallet", "updateUsedAddress", args);
-    };
-
-    getAllPublicKeys(args, success, error) {
-        _exec(success, error, "Wallet", "getAllPublicKeys", args);
+    getPublicKeys(args, success, error) {
+        _exec(success, error, "Wallet", "getPublicKeys", args);
     };
 
     createTransaction(args, success, error) {
@@ -199,6 +187,14 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     signTransaction(args, success, error) {
         exec(success, error, "Wallet", "signTransaction", args);
+    };
+
+    signDigest(args, success, error) {
+        exec(success, error, "Wallet", "signDigest", args);
+    };
+
+    verifyDigest(args, success, error) {
+        exec(success, error, "Wallet", "verifyDigest", args);
     };
 
     getTransactionSignedInfo(args, success, error) {
@@ -221,20 +217,16 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createIdTransaction", args);
     };
 
-    getAllDID(args, success, error) {
-        exec(success, error, "Wallet", "getAllDID", args);
+    getDID(args, success, error) {
+        exec(success, error, "Wallet", "getDID", args);
     };
 
-    getAllCID(args, success, error) {
-        exec(success, error, "Wallet", "getAllCID", args);
+    getCID(args, success, error) {
+        exec(success, error, "Wallet", "getCID", args);
     };
 
     didSign(args, success, error) {
         exec(success, error, "Wallet", "didSign", args);
-    };
-
-    didSignDigest(args, success, error) {
-        exec(success, error, "Wallet", "didSignDigest", args);
     };
 
     verifySignature(args, success, error) {
@@ -427,6 +419,14 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
     createProposalWithdrawTransaction(args, success, error) {
         exec(success, error, "Wallet", "createProposalWithdrawTransaction", args);
+    };
+
+    // BTCSubwallet
+    getLegacyAddresses(args, success, error) {
+        exec(success, error, "Wallet", "getLegacyAddresses", args);
+    };
+    createBTCTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createBTCTransaction", args);
     };
 }
 
