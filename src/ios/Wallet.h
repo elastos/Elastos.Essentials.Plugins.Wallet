@@ -25,6 +25,8 @@
 #import <Cordova/CDVPlugin.h>
 #import "IMasterWallet.h"
 #import "MasterWalletManager.h"
+#import "IBTCSubWallet.h"
+#import "IElastosBaseSubWallet.h"
 #import "ISidechainSubWallet.h"
 #import "IMainchainSubWallet.h"
 #import "IIDChainSubWallet.h"
@@ -93,7 +95,6 @@ String s_logLevel = "warning";
 - (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
 - (void)getSupportedChains:(CDVInvokedUrlCommand *)command;
 - (void)getMasterWalletBasicInfo:(CDVInvokedUrlCommand *)command;
-- (void)createAddress:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithKeystore:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)exportWalletWithPrivateKey:(CDVInvokedUrlCommand *)command;
@@ -106,15 +107,15 @@ String s_logLevel = "warning";
 - (void)createMultiSignMasterWalletWithMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWallet:(CDVInvokedUrlCommand *)command;
 - (void)createMultiSignMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
-- (void)getAllAddress:(CDVInvokedUrlCommand *)command;
-- (void)getLastAddresses:(CDVInvokedUrlCommand *)command;
-- (void)updateUsedAddress:(CDVInvokedUrlCommand *)command;
-- (void)getAllPublicKeys:(CDVInvokedUrlCommand *)command;
+- (void)getAddresses:(CDVInvokedUrlCommand *)command;
+- (void)getPublicKeys:(CDVInvokedUrlCommand *)command;
 - (void)isAddressValid:(CDVInvokedUrlCommand *)command;
 - (void)isSubWalletAddressValid:(CDVInvokedUrlCommand *)command;
 - (void)destroyWallet:(CDVInvokedUrlCommand *)command;
 - (void)createTransaction:(CDVInvokedUrlCommand *)command;
 - (void)signTransaction:(CDVInvokedUrlCommand *)command;
+- (void)signDigest:(CDVInvokedUrlCommand *)command;
+- (void)verifyDigest:(CDVInvokedUrlCommand *)command;
 - (void)getTransactionSignedInfo:(CDVInvokedUrlCommand *)command;
 - (void)convertToRawTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createIdTransaction:(CDVInvokedUrlCommand *)command;
@@ -186,9 +187,9 @@ String s_logLevel = "warning";
 - (void)proposalWithdrawDigest:(CDVInvokedUrlCommand *)command;
 - (void)createProposalWithdrawTransaction:(CDVInvokedUrlCommand *)command;
 
-- (void)getAllDID:(CDVInvokedUrlCommand *)command;
+- (void)getDID:(CDVInvokedUrlCommand *)command;
+- (void)getCID:(CDVInvokedUrlCommand *)command;
 - (void)didSign:(CDVInvokedUrlCommand *)command;
-- (void)didSignDigest:(CDVInvokedUrlCommand *)command;
 - (void)verifySignature:(CDVInvokedUrlCommand *)command;
 - (void)getPublicKeyDID:(CDVInvokedUrlCommand *)command;
 - (void)getPublicKeyCID:(CDVInvokedUrlCommand *)command;
@@ -197,5 +198,9 @@ String s_logLevel = "warning";
 - (void)createTransfer:(CDVInvokedUrlCommand *)command;
 - (void)createTransferGeneric:(CDVInvokedUrlCommand *)command;
 - (void)exportETHSCPrivateKey:(CDVInvokedUrlCommand *)command;
+
+//BTCSidechain
+- (void)getLegacyAddresses:(CDVInvokedUrlCommand *)command;
+- (void)createBTCTransaction:(CDVInvokedUrlCommand *)command;
 
 @end
