@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="elastos-essentials-plugin-wallet" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+<plugin id="elastos-essentials-plugin-wallet" version="2.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Wallet</name>
     <js-module name="Wallet" src="www/wallet.js">
         <clobbers target="walletManager" />
@@ -23,6 +23,8 @@
         </config-file>
         <source-file src="src/ios/Wallet.mm" />
         <header-file src="src/ios/Wallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IBTCSubWallet.h" />
+        <header-file src="src/ios/libspvsdk/include/IElastosBaseSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IIDChainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IEthSidechainSubWallet.h" />
         <header-file src="src/ios/libspvsdk/include/IMainchainSubWallet.h" />
