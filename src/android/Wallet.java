@@ -318,6 +318,9 @@ public class Wallet extends CordovaPlugin {
                 case "createMasterWallet":
                     this.createMasterWallet(args, cc);
                     break;
+                case "createMasterWalletWithPrivKey":
+                    this.createMasterWalletWithPrivKey(args, cc);
+                    break;
                 case "createMultiSignMasterWallet":
                     this.createMultiSignMasterWallet(args, cc);
                     break;
@@ -581,6 +584,39 @@ public class Wallet extends CordovaPlugin {
                     this.createTerminateProposalTransaction(args, cc);
                     break;
 
+                // -- Reserve Custom ID
+                case "reserveCustomIDOwnerDigest":
+                    this.reserveCustomIDOwnerDigest(args, cc);
+                    break;
+                case "reserveCustomIDCRCouncilMemberDigest":
+                    this.reserveCustomIDCRCouncilMemberDigest(args, cc);
+                    break;
+                case "createReserveCustomIDTransaction":
+                    this.createReserveCustomIDTransaction(args, cc);
+                    break;
+
+                // -- Receive Custom ID
+                case "receiveCustomIDOwnerDigest":
+                    this.receiveCustomIDOwnerDigest(args, cc);
+                    break;
+                case "receiveCustomIDCRCouncilMemberDigest":
+                    this.receiveCustomIDCRCouncilMemberDigest(args, cc);
+                    break;
+                case "createReceiveCustomIDTransaction":
+                    this.createReceiveCustomIDTransaction(args, cc);
+                    break;
+
+                // -- Change Custom ID Fee
+                case "changeCustomIDFeeOwnerDigest":
+                    this.changeCustomIDFeeOwnerDigest(args, cc);
+                    break;
+                case "changeCustomIDFeeCRCouncilMemberDigest":
+                    this.changeCustomIDFeeCRCouncilMemberDigest(args, cc);
+                    break;
+                case "createChangeCustomIDFeeTransaction":
+                    this.createChangeCustomIDFeeTransaction(args, cc);
+                    break;
+
                 // -- Proposal Withdraw
                 case "proposalWithdrawDigest":
                     this.proposalWithdrawDigest(args, cc);
@@ -717,6 +753,34 @@ public class Wallet extends CordovaPlugin {
             cc.success(masterWallet.GetBasicInfo());
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Create " + formatWalletName(masterWalletID));
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String singlePrivateKey
+    // args[2]: String password
+    public void createMasterWalletWithPrivKey(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String singlePrivateKey = args.getString(idx++);
+        String password = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.CreateMasterWallet(masterWalletID, singlePrivateKey, password);
+
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeCreateMasterWallet, "Create " + formatWalletName(masterWalletID) + " with priv key");
+                return;
+            }
+
+            cc.success(masterWallet.GetBasicInfo());
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Create " + formatWalletName(masterWalletID) + " with priv key");
         }
     }
 
@@ -3425,6 +3489,306 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
+    // -- Reserve Custom ID
+    public void reserveCustomIDOwnerDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.ReserveCustomIDOwnerDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " reserveCustomIDOwnerDigest");
+        }
+    }
+
+    public void reserveCustomIDCRCouncilMemberDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.ReserveCustomIDCRCouncilMemberDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " reserveCustomIDCRCouncilMemberDigest");
+        }
+    }
+
+    public void createReserveCustomIDTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
+        String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateReserveCustomIDTransaction(inputs, payload, fee, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createReserveCustomIDTransaction");
+        }
+    }
+
+    // -- Receive Custom ID
+    public void receiveCustomIDOwnerDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.ReceiveCustomIDOwnerDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " receiveCustomIDOwnerDigest");
+        }
+    }
+
+    public void receiveCustomIDCRCouncilMemberDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.ReceiveCustomIDCRCouncilMemberDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " receiveCustomIDCRCouncilMemberDigest");
+        }
+    }
+
+    public void createReceiveCustomIDTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
+        String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateReceiveCustomIDTransaction(inputs, payload, fee, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createReceiveCustomIDTransaction");
+        }
+    }
+
+    // -- Change Custom ID Fee
+    public void changeCustomIDFeeOwnerDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.ChangeCustomIDFeeOwnerDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " changeCustomIDFeeOwnerDigest");
+        }
+    }
+
+    public void changeCustomIDFeeCRCouncilMemberDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.ChangeCustomIDFeeCRCouncilMemberDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " changeCustomIDFeeCRCouncilMemberDigest");
+        }
+    }
+
+    public void createChangeCustomIDFeeTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
+        String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateChangeCustomIDFeeTransaction(inputs, payload, fee, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createChangeCustomIDFeeTransaction");
+        }
+    }
+
     // -- Proposal Withdraw
 
     // args[0]: String masterWalletID
@@ -3586,7 +3950,6 @@ public class Wallet extends CordovaPlugin {
     public void createBTCTransaction(JSONArray args, CallbackContext cc) throws JSONException {
         int idx = 0;
         String masterWalletID = args.getString(idx++);
-        String chainID = args.getString(idx++);
         String inputs = args.getString(idx++);
         String outputs = args.getString(idx++);
         String changeAddress = args.getString(idx++);

@@ -90,6 +90,7 @@ String s_logLevel = "warning";
 - (void)destroy:(CDVInvokedUrlCommand *)command;
 - (void)getAllMasterWallets:(CDVInvokedUrlCommand *)command;
 - (void)createMasterWallet:(CDVInvokedUrlCommand *)command;
+- (void)createMasterWalletWithPrivKey:(CDVInvokedUrlCommand *)command;
 - (void)generateMnemonic:(CDVInvokedUrlCommand *)command;
 - (void)createSubWallet:(CDVInvokedUrlCommand *)command;
 - (void)getAllSubWallets:(CDVInvokedUrlCommand *)command;
@@ -182,6 +183,21 @@ String s_logLevel = "warning";
 - (void)terminateProposalOwnerDigest:(CDVInvokedUrlCommand *)command;
 - (void)terminateProposalCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
 - (void)createTerminateProposalTransaction:(CDVInvokedUrlCommand *)command;
+
+// Reserve Custom ID
+- (void)reserveCustomIDOwnerDigest:(CDVInvokedUrlCommand *)command;
+- (void)reserveCustomIDCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createReserveCustomIDTransaction:(CDVInvokedUrlCommand *)command;
+
+// Receive Custom ID
+- (void)receiveCustomIDOwnerDigest:(CDVInvokedUrlCommand *)command;
+- (void)receiveCustomIDCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createReceiveCustomIDTransaction:(CDVInvokedUrlCommand *)command;
+
+// Change Custom ID Fee
+- (void)changeCustomIDFeeOwnerDigest:(CDVInvokedUrlCommand *)command;
+- (void)changeCustomIDFeeCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createChangeCustomIDFeeTransaction:(CDVInvokedUrlCommand *)command;
 
 // Proposal Withdraw
 - (void)proposalWithdrawDigest:(CDVInvokedUrlCommand *)command;

@@ -131,6 +131,15 @@ declare module WalletPlugin {
         createMasterWallet(args, success, error);
 
         /**
+         * Create master wallet with single private key (for eth side-chain single private key), or return existing master wallet if current master wallet manager has the master wallet id.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param singlePrivateKey uint256 hex string of private key
+         * @param password use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+         * @return If success will return a pointer of master wallet interface.
+         */
+        createMasterWalletWithPrivKey(args, success, error);
+
+        /**
          * Create a multi-sign master wallet by related co-signers, or return existing master wallet if current master wallet manager has the master wallet id. Note this creating method generate an readonly multi-sign account which can not append sign into a transaction.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param cosigners JSON array of signer's extend public key. Such as: ["xpub6CLgvYFxzqHDJCWyGDCRQzc5cwCFp4HJ6QuVJsAZqURxmW9QKWQ7hVKzZEaHgCQWCq1aNtqmE4yQ63Yh7frXWUW3LfLuJWBtDtsndGyxAQg", "xpub6CWEYpNZ3qLG1z2dxuaNGz9QQX58wor9ax8AiKBvRytdWfEifXXio1BgaVcT4t7ouP34mnabcvpJLp9rPJPjPx2m6izpHmjHkZAHAHZDyrc"]
@@ -1222,6 +1231,198 @@ declare module WalletPlugin {
          */
         createTerminateProposalTransaction(args, success, error);
 
+        //////////////////////////////////////////////////
+        /*              Reserve Custom ID               */
+        //////////////////////////////////////////////////
+
+        /**
+         * @param payload Reserve Custom ID payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "ReservedCustomIDList": ["...", "...", ...],
+         * }
+         * @return
+         */
+        reserveCustomIDOwnerDigest(args, success, error);
+
+         /**
+         * @param payload Reserve Custom ID payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "ReservedCustomIDList": ["...", "...", ...],
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         * }
+         * @return
+         */
+        reserveCustomIDCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param inputs UTXO which will be used. eg
+         * [
+         *   {
+         *     "TxHash": "...", // string
+         *     "Index": 123, // int
+         *     "Address": "...", // string
+         *     "Amount": "100000000" // bigint string in SELA
+         *   },
+         *   ...
+         * ]
+         * @param payload Reserve Custom ID payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "ReservedCustomIDList": ["...", "...", ...],
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         *    "CRCouncilMemberSignature": "...",
+         * }
+         * @param fee Fee amount. Bigint string in SELA
+         * @param memo Remark string
+         * @return
+         */
+         createReserveCustomIDTransaction(args, success, error);
+
+
+        //////////////////////////////////////////////////
+        /*               Receive Custom ID              */
+        //////////////////////////////////////////////////
+
+        /**
+         * @param payload Receive Custom ID payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "ReceivedCustomIDList": ["...", "...", ...],
+         *    "ReceiverDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"
+         * }
+         * @return
+         */
+        receiveCustomIDOwnerDigest(args, success, error);
+
+        /**
+         * @param payload Receive Custom ID payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "ReceivedCustomIDList": ["...", "...", ...],
+         *    "ReceiverDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         * }
+         * @return
+         */
+        receiveCustomIDCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param inputs UTXO which will be used. eg
+         * [
+         *   {
+         *     "TxHash": "...", // string
+         *     "Index": 123, // int
+         *     "Address": "...", // string
+         *     "Amount": "100000000" // bigint string in SELA
+         *   },
+         *   ...
+         * ]
+         * @param payload Receive Custom ID payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "ReceivedCustomIDList": ["...", "...", ...],
+         *    "ReceiverDID": "iT42VNGXNUeqJ5yP4iGrqja6qhSEdSQmeP"
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         *    "CRCouncilMemberSignature": "...",
+         * }
+         * @param fee Fee amount. Bigint string in SELA
+         * @param memo Remark string
+         * @return
+         */
+        createReceiveCustomIDTransaction(args, success, error);
+
+        //////////////////////////////////////////////////
+        /*              Change Custom ID Fee            */
+        //////////////////////////////////////////////////
+
+        /**
+         * @param payload Change custom ID fee payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "CustomIDFeeRateInfo": {
+         *      "RateOfCustomIDFee": 10000,
+         *      "EIDEffectiveHeight": 10000
+         *    }
+         * }
+         * @return
+         */
+        changeCustomIDFeeOwnerDigest(args, success, error);
+
+        /**
+         * @param payload Change custom ID fee payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "CustomIDFeeRateInfo": {
+         *      "RateOfCustomIDFee": 10000,
+         *      "EIDEffectiveHeight": 10000
+         *    },
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         * }
+         * @return
+         */
+        changeCustomIDFeeCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param inputs UTXO which will be used. eg
+         * [
+         *   {
+         *     "TxHash": "...", // string
+         *     "Index": 123, // int
+         *     "Address": "...", // string
+         *     "Amount": "100000000" // bigint string in SELA
+         *   },
+         *   ...
+         * ]
+         * @param payload Change custom ID fee payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "CustomIDFeeRateInfo": {
+         *      "RateOfCustomIDFee": 10000,
+         *      "EIDEffectiveHeight": 10000
+         *    },
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         *    "CRCouncilMemberSignature": "...",
+         * }
+         * @param fee Fee amount. Bigint string in SELA
+         * @param memo Remark string
+         * @return
+         */
+        createChangeCustomIDFeeTransaction(args, success, error);
 
         //////////////////////////////////////////////////
         /*               Proposal Withdraw              */
