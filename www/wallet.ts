@@ -63,6 +63,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createMasterWallet", args);
     };
 
+    createMasterWalletWithPrivKey(args, success, error) {
+        exec(success, error, "Wallet", "createMasterWalletWithPrivKey", args);
+    };
+
     createMultiSignMasterWallet(args, success, error) {
         exec(success, error, "Wallet", "createMultiSignMasterWallet", args);
     };
@@ -413,6 +417,39 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createTerminateProposalTransaction", args);
     };
 
+    // Reserve Custom ID
+    reserveCustomIDOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "reserveCustomIDOwnerDigest", args);
+    };
+    reserveCustomIDCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "reserveCustomIDCRCouncilMemberDigest", args);
+    };
+    createReserveCustomIDTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createReserveCustomIDTransaction", args);
+    };
+
+    // Receive Custom ID
+    receiveCustomIDOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "receiveCustomIDOwnerDigest", args);
+    };
+    receiveCustomIDCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "receiveCustomIDCRCouncilMemberDigest", args);
+    };
+    createReceiveCustomIDTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createReceiveCustomIDTransaction", args);
+    };
+
+    // Change Custom ID Fee
+    changeCustomIDFeeOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "changeCustomIDFeeOwnerDigest", args);
+    };
+    changeCustomIDFeeCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "changeCustomIDFeeCRCouncilMemberDigest", args);
+    };
+    createChangeCustomIDFeeTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createChangeCustomIDFeeTransaction", args);
+    };
+
     // Proposal Withdraw
     proposalWithdrawDigest(args, success, error) {
         exec(success, error, "Wallet", "proposalWithdrawDigest", args);
@@ -423,7 +460,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     // BTCSubwallet
     getLegacyAddresses(args, success, error) {
-        exec(success, error, "Wallet", "getLegacyAddresses", args);
+        _exec(success, error, "Wallet", "getLegacyAddresses", args);
     };
     createBTCTransaction(args, success, error) {
         exec(success, error, "Wallet", "createBTCTransaction", args);
