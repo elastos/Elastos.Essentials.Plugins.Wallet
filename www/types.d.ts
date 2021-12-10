@@ -87,8 +87,16 @@ declare module WalletPlugin {
     }
 
     const enum MnemonicLanguage {
-        CHINESE = 'chinese',
-        ENGLISH = "english",
+        ChineseSimplified = 'chinesesimplified',
+        ChineseTraditional = "chinesetraditional",
+        Czech = "czech",
+        English = "english",
+        French = "french",
+        Italian = "italian",
+        Japanese = "japanese",
+        Korean = "korean",
+        Portuguese = "portuguese",
+        Spanish = "spanish",
     }
 
     const enum NetworkType {
