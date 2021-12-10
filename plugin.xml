@@ -42,6 +42,7 @@
         <source-file src="src/ios/libspvsdk/lib/libspvsdk.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libsqlite3.a" framework="true" />
         <source-file src="src/ios/libspvsdk/lib/libssl.a" framework="true" />
+        <source-file src="src/ios/libspvsdk/lib/libutf8proc.a" framework="true" />
     </platform>
     <hook src="hooks/before_plugin_install/build_ts.js" type="before_plugin_install" />
 </plugin>
