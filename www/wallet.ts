@@ -458,6 +458,17 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         exec(success, error, "Wallet", "createProposalWithdrawTransaction", args);
     };
 
+    // Proposal Register side-chain
+    registerSidechainOwnerDigest(args, success, error) {
+        exec(success, error, "Wallet", "registerSidechainOwnerDigest", args);
+    };
+    registerSidechainCRCouncilMemberDigest(args, success, error) {
+        exec(success, error, "Wallet", "registerSidechainCRCouncilMemberDigest", args);
+    };
+    createRegisterSidechainTransaction(args, success, error) {
+        exec(success, error, "Wallet", "createRegisterSidechainTransaction", args);
+    };
+
     // BTCSubwallet
     getLegacyAddresses(args, success, error) {
         _exec(success, error, "Wallet", "getLegacyAddresses", args);

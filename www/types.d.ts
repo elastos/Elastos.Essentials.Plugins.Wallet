@@ -1471,6 +1471,92 @@ declare module WalletPlugin {
          */
         createProposalWithdrawTransaction(args, success, error);
 
+        //////////////////////////////////////////////////
+        /*               Proposal Register side-chain   */
+        //////////////////////////////////////////////////
+        /**
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @payload register sidechain owner digest payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "SidechainInfo": {
+         *      "SideChainName": "...",
+         *      "MagicNumber": 0, // uint32_t
+         *      "GenesisHash": "...", // hexstring of uint256
+         *      "ExchangeRate": 1, // uint64_t
+         *      "EffectiveHeight": 1000, // uint32_t
+         *      "ResourcePath": "..." // path string
+         *    }
+         * }
+         * @return
+         */
+        registerSidechainOwnerDigest(args, success, error);
+
+        /**
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @payload register sidechain CR council member digest payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "SidechainInfo": {
+         *      "SideChainName": "...",
+         *      "MagicNumber": 0, // uint32_t
+         *      "GenesisHash": "...", // hexstring of uint256
+         *      "ExchangeRate": 1, // uint64_t
+         *      "EffectiveHeight": 1000, // uint32_t
+         *      "ResourcePath": "..." // path string
+         *    }
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         * }
+         * @return
+         */
+        registerSidechainCRCouncilMemberDigest(args, success, error);
+
+        /**
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param chainID unique identity of a sub wallet. Chain id should not be empty.
+         * @inputs UTXO which will be used. eg
+         * [
+         *   {
+         *     "TxHash": "...", // string
+         *     "Index": 123, // int
+         *     "Address": "...", // string
+         *     "Amount": "100000000" // bigint string in SELA
+         *   },
+         *   ...
+         * ]
+         * @payload Register side-chain payload
+         * {
+         *    "CategoryData": "testdata",  // limit: 4096 bytes
+         *    "OwnerPublicKey": "...",
+         *    "DraftHash": "...",
+         *    "DraftData": "", // Optional, string format, limit 1 Mbytes
+         *    "SidechainInfo": {
+         *      "SideChainName": "...",
+         *      "MagicNumber": 0, // uint32_t
+         *      "GenesisHash": "...", // hexstring of uint256
+         *      "ExchangeRate": 1, // uint64_t
+         *      "EffectiveHeight": 1000, // uint32_t
+         *      "ResourcePath": "..." // path string
+         *    }
+         *    "Signature": "...",
+         *    "CRCouncilMemberDID": "icwTktC5M6fzySQ5yU7bKAZ6ipP623apFY",
+         *    "CRCouncilMemberSignature": "...",
+         * }
+         * @fee Fee amount. Bigint string in SELA
+         * @memo Remark string
+         * @return
+         */
+        createRegisterSidechainTransaction(args, success, error);
+
         // BTCSubwallet
 
         /**

@@ -203,6 +203,11 @@ String s_logLevel = "warning";
 - (void)proposalWithdrawDigest:(CDVInvokedUrlCommand *)command;
 - (void)createProposalWithdrawTransaction:(CDVInvokedUrlCommand *)command;
 
+// Proposal Register side-chain
+- (void)registerSidechainOwnerDigest:(CDVInvokedUrlCommand *)command;
+- (void)registerSidechainCRCouncilMemberDigest:(CDVInvokedUrlCommand *)command;
+- (void)createRegisterSidechainTransaction:(CDVInvokedUrlCommand *)command;
+
 - (void)getDID:(CDVInvokedUrlCommand *)command;
 - (void)getCID:(CDVInvokedUrlCommand *)command;
 - (void)didSign:(CDVInvokedUrlCommand *)command;

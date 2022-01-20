@@ -22,29 +22,27 @@
 
 package org.elastos.essentials.plugins.wallet;
 
-import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.CordovaInterface;
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaWebView;
-
-import org.elastos.spvcore.BTCSubWallet;
-import org.elastos.spvcore.ElastosBaseSubWallet;
-import org.elastos.spvcore.EthSidechainSubWallet;
-import org.elastos.spvcore.MasterWallet;
-import org.elastos.spvcore.SubWallet;
-import org.elastos.spvcore.MainchainSubWallet;
-import org.elastos.spvcore.IDChainSubWallet;
-import org.elastos.spvcore.SidechainSubWallet;
-import org.elastos.spvcore.MasterWalletManager;
-import org.elastos.spvcore.WalletException;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
+import org.elastos.spvcore.BTCSubWallet;
+import org.elastos.spvcore.ElastosBaseSubWallet;
+import org.elastos.spvcore.EthSidechainSubWallet;
+import org.elastos.spvcore.IDChainSubWallet;
+import org.elastos.spvcore.MainchainSubWallet;
+import org.elastos.spvcore.MasterWallet;
+import org.elastos.spvcore.MasterWalletManager;
+import org.elastos.spvcore.SidechainSubWallet;
+import org.elastos.spvcore.SubWallet;
+import org.elastos.spvcore.WalletException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.util.Log;
 
@@ -623,6 +621,17 @@ public class Wallet extends CordovaPlugin {
                     break;
                 case "createProposalWithdrawTransaction":
                     this.createProposalWithdrawTransaction(args, cc);
+                    break;
+
+                // -- Proposal Register side-chain
+                case "registerSidechainOwnerDigest":
+                    this.registerSidechainOwnerDigest(args, cc);
+                    break;
+                case "registerSidechainCRCouncilMemberDigest":
+                    this.registerSidechainCRCouncilMemberDigest(args, cc);
+                    break;
+                case "createRegisterSidechainTransaction":
+                    this.createRegisterSidechainTransaction(args, cc);
                     break;
 
                 // Side chain subwallet
@@ -3862,6 +3871,107 @@ public class Wallet extends CordovaPlugin {
             cc.success(stringJson);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createProposalWithdrawTransaction");
+        }
+    }
+
+    // -- Proposal Register side-chain
+    public void registerSidechainOwnerDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.RegisterSidechainOwnerDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " registerSidechainOwnerDigest");
+        }
+    }
+
+    public void registerSidechainCRCouncilMemberDigest(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String payload = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.RegisterSidechainCRCouncilMemberDigest(payload);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc,
+                    formatWalletName(masterWalletID, chainID) + " registerSidechainCRCouncilMemberDigest");
+        }
+    }
+
+    public void createRegisterSidechainTransaction(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String chainID = args.getString(idx++);
+        String inputs = args.getString(idx++);
+        String payload = args.getString(idx++);
+        String fee = args.getString(idx++);
+        String memo = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            SubWallet subWallet = getSubWallet(masterWalletID, chainID);
+            if (subWallet == null) {
+                errorProcess(cc, errCodeInvalidSubWallet, "Get " + formatWalletName(masterWalletID, chainID));
+                return;
+            }
+
+            if (!(subWallet instanceof MainchainSubWallet)) {
+                errorProcess(cc, errCodeSubWalletInstance,
+                        formatWalletName(masterWalletID, chainID) + " is not instance of MainchainSubWallet");
+                return;
+            }
+
+            MainchainSubWallet mainchainSubWallet = (MainchainSubWallet) subWallet;
+            String stringJson = mainchainSubWallet.CreateRegisterSidechainTransaction(inputs, payload, fee, memo);
+            cc.success(stringJson);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, formatWalletName(masterWalletID, chainID) + " createRegisterSidechainTransaction");
         }
     }
 
