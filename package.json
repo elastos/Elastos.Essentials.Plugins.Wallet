@@ -1,6 +1,6 @@
 {
   "name": "elastos-essentials-plugin-wallet",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Elastos Wallet Plugin",
   "cordova": {
     "id": "elastos-essentials-plugin-wallet",
