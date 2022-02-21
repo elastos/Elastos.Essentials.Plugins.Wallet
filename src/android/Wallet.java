@@ -340,11 +340,17 @@ public class Wallet extends CordovaPlugin {
                 case "importWalletWithMnemonic":
                     this.importWalletWithMnemonic(args, cc);
                     break;
+                case "importWalletWithSeed":
+                    this.importWalletWithSeed(args, cc);
+                    break;
                 case "exportWalletWithKeystore":
                     this.exportWalletWithKeystore(args, cc);
                     break;
                 case "exportWalletWithMnemonic":
                     this.exportWalletWithMnemonic(args, cc);
+                    break;
+                case "exportWalletWithSeed":
+                    this.exportWalletWithSeed(args, cc);
                     break;
                 case "exportWalletWithPrivateKey":
                     this.exportWalletWithPrivateKey(args, cc);
@@ -958,6 +964,41 @@ public class Wallet extends CordovaPlugin {
         }
     }
 
+    // args[0]: String masterWalletID
+    // args[1]: String seed
+    // args[2]: String payPassword
+    // args[3]: boolean singleAddress
+    // args[4]: String mnemonic
+    // args[5]: String phrasePassword
+    public void importWalletWithSeed(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String seed = args.getString(idx++);
+        String payPassword = args.getString(idx++);
+        boolean singleAddress = args.getBoolean(idx++);
+        String mnemonic = args.getString(idx++);
+        String phrasePassword = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            MasterWallet masterWallet = mMasterWalletManager.ImportWalletWithSeed(masterWalletID, seed, payPassword,
+                    singleAddress, mnemonic, phrasePassword);
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeImportFromMnemonic,
+                        "Import " + formatWalletName(masterWalletID) + " with seed");
+                return;
+            }
+
+            cc.success(masterWallet.GetBasicInfo());
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Import " + formatWalletName(masterWalletID) + " with mnemonic");
+        }
+    }
+
     public void getAllMasterWallets(JSONArray args, CallbackContext cc) throws JSONException {
         try {
             ArrayList<MasterWallet> masterWalletList = mMasterWalletManager.GetAllMasterWallets();
@@ -1208,6 +1249,33 @@ public class Wallet extends CordovaPlugin {
             cc.success(mnemonic);
         } catch (WalletException e) {
             exceptionProcess(e, cc, "Export " + masterWalletID + " to mnemonic");
+        }
+    }
+
+    // args[0]: String masterWalletID
+    // args[1]: String payPassword
+    public void exportWalletWithSeed(JSONArray args, CallbackContext cc) throws JSONException {
+        int idx = 0;
+        String masterWalletID = args.getString(idx++);
+        String payPassword = args.getString(idx++);
+
+        if (args.length() != idx) {
+            errorProcess(cc, errCodeInvalidArg, idx + " parameters are expected");
+            return;
+        }
+
+        try {
+            MasterWallet masterWallet = getIMasterWallet(masterWalletID);
+            if (masterWallet == null) {
+                errorProcess(cc, errCodeInvalidMasterWallet, "Get " + formatWalletName(masterWalletID));
+                return;
+            }
+
+            String seed = masterWallet.ExportSeed(payPassword);
+
+            cc.success(seed);
+        } catch (WalletException e) {
+            exceptionProcess(e, cc, "Export " + masterWalletID + " to seed");
         }
     }
 

@@ -673,6 +673,32 @@ using namespace Elastos::ElaWallet;
     }
 }
 
+- (void)exportWalletWithSeed:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String backupPassword = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+    IMasterWallet *masterWallet = [self getIMasterWallet:masterWalletID];
+    if (masterWallet == nil) {
+        NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Get", [self formatWalletName:masterWalletID]];
+        return [self errorProcess:command code:errCodeInvalidMasterWallet msg:msg];
+    }
+
+    try {
+        Json json = masterWallet->ExportSeed(backupPassword);
+        NSString *jsonString = [self stringWithCString:json.dump()];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
 - (void)exportWalletWithPrivateKey:(CDVInvokedUrlCommand *)command
 {
     NSArray *args = command.arguments;
@@ -848,6 +874,36 @@ using namespace Elastos::ElaWallet;
                 masterWalletID, mnemonic, phrasePassword, payPassword, singleAddress);
         if (masterWallet == nil) {
             NSString *msg = [NSString stringWithFormat:@"%@ %@ %@", @"ImportWalletWithMnemonic", [self formatWalletName:masterWalletID], @"with mnemonic"];
+            return [self errorProcess:command code:errCodeImportFromMnemonic msg:msg];
+        }
+        NSString *jsonString = [self getBasicInfo:masterWallet];
+        return [self successAsString:command msg:jsonString];
+    } catch (const std:: exception &e) {
+        return [self exceptionProcess:command string:e.what()];
+    }
+}
+
+- (void)importWalletWithSeed:(CDVInvokedUrlCommand *)command
+{
+    NSArray *args = command.arguments;
+    int idx = 0;
+
+    String masterWalletID = [self cstringWithString:args[idx++]];
+    String seed           = [self cstringWithString:args[idx++]];
+    String payPassword    = [self cstringWithString:args[idx++]];
+    Boolean singleAddress = [args[idx++] boolValue];
+    String mnemonic       = [self cstringWithString:args[idx++]];
+    String phrasePassword = [self cstringWithString:args[idx++]];
+
+    if (args.count != idx) {
+        return [self errCodeInvalidArg:command code:errCodeInvalidArg idx:idx];
+    }
+
+    try {
+        IMasterWallet *masterWallet = mMasterWalletManager->ImportWalletWithSeed(
+                masterWalletID, seed, payPassword, singleAddress, mnemonic, phrasePassword);
+        if (masterWallet == nil) {
+            NSString *msg = [NSString stringWithFormat:@"%@ %@ %@", @"ImportWalletWithSeed", [self formatWalletName:masterWalletID], @"with seed"];
             return [self errorProcess:command code:errCodeImportFromMnemonic msg:msg];
         }
         NSString *jsonString = [self getBasicInfo:masterWallet];

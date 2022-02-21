@@ -203,12 +203,26 @@ declare module WalletPlugin {
          * Import master wallet by mnemonic.
          * @param masterWalletID is the unique identification of a master wallet object.
          * @param mnemonic for importing the master wallet.
-         * @param phrasePassword combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
+         * @param passphrase combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
          * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
          * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
          * @return If success will return a pointer of master wallet interface.
          */
         importWalletWithMnemonic(args, success, error);
+
+        /**
+         * Import master wallet by seed
+         * Node: If the mnemonic is not empty, verify that the seed matches mnemonic + passphrase.
+         *  If the mnemonic is empty, IMasterWallet::ExportMnemonic() will return empty.
+         * @param masterWalletID is the unique identification of a master wallet object
+         * @param seed hex-string of uint512
+         * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception
+         * @param singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security
+         * @param mnemonic mnemonic words string separated by spaces
+         * @param passphrase combine with mnemonic to generate seed
+         * @return If success will return a pointer of master wallet interface
+         */
+         importWalletWithSeed(args, success, error);
 
         /**
          * Get manager existing master wallets.
@@ -285,6 +299,14 @@ declare module WalletPlugin {
          * @return If success will return the mnemonic of master wallet.
          */
         exportWalletWithMnemonic(args, success, error);
+
+        /**
+         * Export seed of the current wallet.
+         * @param masterWalletID is the unique identification of a master wallet object.
+         * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+         * @return If success will return the mnemonic of master wallet.
+         */
+         exportWalletWithSeed(args, success, error);
 
         /**
          * Export private of the current wallet.

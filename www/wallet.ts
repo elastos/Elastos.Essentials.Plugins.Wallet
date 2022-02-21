@@ -87,6 +87,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
         _exec(success, error, "Wallet", "importWalletWithMnemonic", args);
     };
 
+    importWalletWithSeed(args, success, error) {
+        _exec(success, error, "Wallet", "importWalletWithSeed", args);
+    };
+
     getAllMasterWallets(args, success, error) {
         _exec(success, error, "Wallet", "getAllMasterWallets", args);
     };
@@ -127,6 +131,10 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
 
     exportWalletWithMnemonic(args, success, error) {
         exec(success, error, "Wallet", "exportWalletWithMnemonic", args);
+    };
+
+    exportWalletWithSeed(args, success, error) {
+        exec(success, error, "Wallet", "exportWalletWithSeed", args);
     };
 
     exportWalletWithPrivateKey(args, success, error) {
