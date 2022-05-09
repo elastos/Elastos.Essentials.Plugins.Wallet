@@ -154,7 +154,7 @@ class WalletManagerImpl implements WalletPlugin.WalletManager {
     };
 
     getPubKeyInfo(args, success, error) {
-        exec(success, error, "Wallet", "getPubKeyInfo", args);
+        _exec(success, error, "Wallet", "getPubKeyInfo", args);
     };
 
     isAddressValid(args, success, error) {

@@ -1409,8 +1409,8 @@ public class Wallet extends CordovaPlugin {
                 return;
             }
 
-            masterWallet.GetPubKeyInfo();
-            cc.success("GetPubKeyInfo OK");
+            String pubkeyInfo = masterWallet.GetPubKeyInfo();
+            cc.success(pubkeyInfo);
         } catch (WalletException e) {
             exceptionProcess(e, cc, formatWalletName(masterWalletID) + " Get PubKey Info");
         }

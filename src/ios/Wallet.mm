@@ -819,8 +819,9 @@ using namespace Elastos::ElaWallet;
     }
 
     try {
-        masterWallet->GetPubKeyInfo();
-        return [self successAsString:command msg:@"Get pubKey info OK"];
+        Json json = masterWallet->GetPubKeyInfo();
+        NSString *jsonString = [self stringWithCString:json.dump()];
+        return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
         return [self exceptionProcess:command string:e.what()];
     }
