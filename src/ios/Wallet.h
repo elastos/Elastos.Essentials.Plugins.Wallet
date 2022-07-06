@@ -144,7 +144,6 @@ String s_logLevel = "warning";
 - (void)getOwnerPublicKey:(CDVInvokedUrlCommand *)command;
 - (void)getOwnerAddress:(CDVInvokedUrlCommand *)command;
 - (void)getOwnerDepositAddress:(CDVInvokedUrlCommand *)command;
-- (void)getRegisteredProducerInfo:(CDVInvokedUrlCommand *)command;
 
 // CRC
 - (void)getCRDepositAddress:(CDVInvokedUrlCommand *)command;
@@ -154,7 +153,6 @@ String s_logLevel = "warning";
 - (void)createUpdateCRTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createUnregisterCRTransaction:(CDVInvokedUrlCommand *)command;
 - (void)createRetrieveCRDepositTransaction:(CDVInvokedUrlCommand *)command;
-- (void)getRegisteredCRInfo:(CDVInvokedUrlCommand *)command;
 - (void)CRCouncilMemberClaimNodeDigest:(CDVInvokedUrlCommand *)command;
 - (void)createCRCouncilMemberClaimNodeTransaction:(CDVInvokedUrlCommand *)command;
 

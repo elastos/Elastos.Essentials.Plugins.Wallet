@@ -144,12 +144,13 @@ using namespace Elastos::ElaWallet;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)exceptionProcess:(CDVInvokedUrlCommand *)command  string:(String) exceptionString
+- (void)exceptionProcess:(CDVInvokedUrlCommand *)command  string:(String) exceptionString msg:(String) msg
 {
     NSString *errString=[self stringWithCString:exceptionString];
     NSDictionary *dic=  [self dictionaryWithJsonString:errString];
     if (dic != nil) {
-        [self errorProcess:command code:[dic[@"Code"] intValue] msg:dic[@"Message"]];
+        NSString *msgStr =  [NSString stringWithFormat:@"%@: %@", [self stringWithCString:msg], dic[@"Message"]];
+        [self errorProcess:command code:[dic[@"Code"] intValue] msg:msgStr];
     } else {
         // if the exceptionString isn't json string
         [self errorProcess:command code:errCodeWalletException msg:errString];
@@ -354,7 +355,7 @@ using namespace Elastos::ElaWallet;
 
     // TODO:check the did
     if (dir.length() == 0) {
-        return [self exceptionProcess:command string:"Invalid dir"];
+        return [self exceptionProcess:command string:"Invalid dir" msg:""];
     }
 
     NSString *rootPath = [NSString stringWithFormat:@"%s", dir.c_str()];
@@ -385,7 +386,8 @@ using namespace Elastos::ElaWallet;
     } catch (const std:: exception & e ) {
         NSString *errString=[self stringWithCString:e.what()];
         NSLog(@"init MasterWalletManager error: %@", errString);
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create master wallet";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -395,7 +397,7 @@ using namespace Elastos::ElaWallet;
         [self destroyMasterWalletManager];
         return [self successAsString:command msg:@""];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        return [self exceptionProcess:command string:e.what() msg:"destroy "];
     }
 }
 
@@ -413,7 +415,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self arrayToJSONString:masterWalletListJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "get All MasterWallets";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -445,7 +448,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create masterWallet";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -475,7 +479,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create masterWallet With Private Key";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -501,7 +506,8 @@ using namespace Elastos::ElaWallet;
         CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:mnemonicString];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "generate mnemonic";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -533,7 +539,8 @@ using namespace Elastos::ElaWallet;
 
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create subWallet " + masterWalletID + ":" + chainID;
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 
 }
@@ -566,7 +573,8 @@ using namespace Elastos::ElaWallet;
         NSString *msg = [self arrayToJSONString:subWalletJsonArray];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " get All SubWallets ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -598,7 +606,8 @@ using namespace Elastos::ElaWallet;
         CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:stringArray];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " get supported chains ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -643,7 +652,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " export wallet with keystore ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -669,7 +679,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " export wallet with mnemonic ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -695,7 +706,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " export wallet with seed ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -721,7 +733,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " export wallet with private key ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -747,7 +760,8 @@ using namespace Elastos::ElaWallet;
         masterWallet->VerifyPassPhrase(passPhrase, payPassword);
         return [self successAsString:command msg:@"Verify passPhrase OK"];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " verify passphrase ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -772,7 +786,8 @@ using namespace Elastos::ElaWallet;
         masterWallet->VerifyPayPassword(payPassword);
         return [self successAsString:command msg:@"Verify pay password OK"];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " verify password ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -798,7 +813,8 @@ using namespace Elastos::ElaWallet;
         masterWallet->ChangePassword(oldPassword, newPassword);
         return [self successAsString:command msg:@"Change password OK"];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " change password ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -823,7 +839,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " get pubkey info ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -851,7 +868,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "import wallet with keystore ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -880,7 +898,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "import wallet with mnemonic ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -910,7 +929,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "import wallet with seed ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -946,7 +966,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create multi sign master wallet with mnemonic ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -979,7 +1000,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create multi sign master wallet ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1014,7 +1036,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self getBasicInfo:masterWallet];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = "create multi sign master wallet ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1043,7 +1066,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " getAddress ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1072,7 +1096,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " get public keys ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1163,7 +1188,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create deposit transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1199,7 +1225,8 @@ using namespace Elastos::ElaWallet;
             return [self successAsString:command msg:msg];
         } catch (const std:: exception &e) {
             dispatch_semaphore_signal(walletSemaphore);
-            return [self exceptionProcess:command string:e.what()];
+            String msg = masterWalletID + " destroy master wallet ";
+            return [self exceptionProcess:command string:e.what() msg:msg];
         }
     });
 }
@@ -1230,7 +1257,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:json];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1258,7 +1286,8 @@ using namespace Elastos::ElaWallet;
         NSString *msg = [self stringWithJson:result];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " sign transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1288,7 +1317,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:ret];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " sign digest ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1317,7 +1347,8 @@ using namespace Elastos::ElaWallet;
         CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:ret];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " verify digest ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1345,7 +1376,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:resultJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " get transaction signed info ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1373,7 +1405,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithCString:rawTx];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " convert to raw transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1405,7 +1438,8 @@ using namespace Elastos::ElaWallet;
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create id transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1441,7 +1475,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:json];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create withdraw transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1490,7 +1525,8 @@ using namespace Elastos::ElaWallet;
         NSString *msg = [NSString stringWithFormat:@"%@ %@", @"Destroy", [self formatWalletNameWithString:masterWalletID other:chainID]];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + " destroy " + chainID;
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1568,7 +1604,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:payloadJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " generate producer payload ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1600,7 +1637,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:payloadJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " generate cancel producer payload ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1636,7 +1674,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create register producer transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1671,7 +1710,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create update producer transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1706,7 +1746,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create cancel producer transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1741,7 +1782,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create retrieve deposit transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1885,7 +1927,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:payloadJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " generate CR info payload ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1916,7 +1959,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:payloadJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " generate unregister CR payload ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1951,7 +1995,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " generate register CR transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -1986,7 +2031,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create update CR transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2021,7 +2067,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create unregister CR transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2056,7 +2103,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID + " create retrieve CR deposit transaction ";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2088,7 +2136,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " CR council member claim node digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2123,7 +2172,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create CR council member claim node transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2158,7 +2208,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:txJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create vote transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2190,7 +2241,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2222,7 +2274,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal CR council member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2254,7 +2307,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " calculate proposal hash";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2289,7 +2343,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create proposal transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2321,7 +2376,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal review digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2356,7 +2412,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create proposal review transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2388,7 +2445,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal tracking owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2420,7 +2478,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal tracking new owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2452,7 +2511,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal tracking secretary digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2484,7 +2544,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal withdraw digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2519,7 +2580,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create proposal withdraw transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2554,7 +2616,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create proposal tracking transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2587,7 +2650,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal secretary general election digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2619,7 +2683,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal secretary general election CRC member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2654,7 +2719,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create secretary general election transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2687,7 +2753,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal change owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2719,7 +2786,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " proposal change owner CRC member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2754,7 +2822,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create proposal change owner transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2787,7 +2856,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " terminate proposal owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2819,7 +2889,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " terminate proposal CRC member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2854,7 +2925,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create terminate proposal transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2887,7 +2959,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " reserve custom ID owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2919,7 +2992,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " reserve custom ID CRC member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2954,7 +3028,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create reserve custom ID transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -2987,7 +3062,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " receive custom ID owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3019,7 +3095,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " receive custom ID CRC member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3054,7 +3131,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create receive custom ID transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3087,7 +3165,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " change custom ID fee owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3119,7 +3198,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " change custom ID fee CRC memeber digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3154,7 +3234,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create change custom ID fee transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3187,7 +3268,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " register sidechain owner digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3219,7 +3301,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " register sidechain CRC member digest";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3254,7 +3337,8 @@ using namespace Elastos::ElaWallet;
         NSString *jsonString = [self stringWithJson:stringJson];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" + chainID +  " create register sidechain transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3290,7 +3374,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:json];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" +  " get did";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3319,7 +3404,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:json];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" +  " get cid";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3347,7 +3433,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:ret];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" +  " sign";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3375,7 +3462,8 @@ String const IDChain = "IDChain";
         CDVPluginResult*  pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:ret];
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" +  " Verify Signature";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3401,7 +3489,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:ret];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" +  " get public key DID";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3427,7 +3516,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:ret];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":" +  " get public key CID";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3460,7 +3550,8 @@ String const IDChain = "IDChain";
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":ETHSC" +  " create transfer";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3494,7 +3585,8 @@ String const IDChain = "IDChain";
         NSString *msg = [self stringWithJson:json];
         return [self successAsString:command msg:msg];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":ETHSC" +  " create transfer generic";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3522,7 +3614,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:ret];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":ETHSC" +  " export private key";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3552,7 +3645,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithCString:json.dump()];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":BTC" +  " get legacy addresses";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
@@ -3581,7 +3675,8 @@ String const IDChain = "IDChain";
         NSString *jsonString = [self stringWithJson:json];
         return [self successAsString:command msg:jsonString];
     } catch (const std:: exception &e) {
-        return [self exceptionProcess:command string:e.what()];
+        String msg = masterWalletID + ":BTC" +  " create transaction";
+        return [self exceptionProcess:command string:e.what() msg:msg];
     }
 }
 
